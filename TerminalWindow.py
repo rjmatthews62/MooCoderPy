@@ -293,17 +293,23 @@ class TerminalWindow(ScrollText):
         self.sendbtn.pack(side=RIGHT)
         self.sendcmd.pack(fill=X, expand=True)
         self.sendcmd.bind("<Return>",self.doSendEvent)
-        self.socket = None
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         self.iscsi = False
         self.isesc = False
         self.parameters = []
         self.currentparam = ""
         self.ResetStyle()
+        self.output=""
+        self.currenttag=""
         self.taglist = []
         self.settag()
+        self.listenthread=None
 
     def settag(self):
         tagname = self.myfontcolor + ";" + self.mycolor
+        if (tagname!=self.currenttag):
+            self.flush()
         if not (tagname in self.taglist):
             cfg = {"background": self.mycolor, "foreground": self.myfontcolor}
             self.textbox.tag_config(tagname, cfg)
@@ -317,6 +323,12 @@ class TerminalWindow(ScrollText):
 
     def rgb(self, r, g, b):
         return "#%02x%02x%02x" % (r, g, b)
+    
+    def flush(self):
+        if self.output!="":
+            self.textbox.insert("end",self.output,self.currenttag)
+            self.output=""
+            self.textbox.see("end")
 
     def ResetStyle(self):
         self.isbold = False
@@ -425,7 +437,8 @@ class TerminalWindow(ScrollText):
             self.isesc = False
             self.iscsi = False
             self.currentparam = ""
-            self.textbox.insert("end", c, self.currenttag)
+            self.output+=c
+#            self.textbox.insert("end", c, self.currenttag)
 
     def doSend(self):
         s = self.mytext.get()
@@ -438,19 +451,16 @@ class TerminalWindow(ScrollText):
         self.doSend()
         
     def doConnect(self, server, port):
-        if self.socket != None:
-            self.disconnect()
+        self.disconnect()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((server, port))
-        x = threading.Thread(target=self.doListen)
-        x.start()
+        self.listenthread = threading.Thread(target=self.doListen)
+        self.listenthread.start()
         print("Connected")
 
     def disconnect(self):
-        if self.socket != NONE:
-            print("Disconnecting...")
-            self.socket.close()
-            self.socket = None
+        print("Disconnecting...")
+        self.socket.close()
 
     def doListen(self):
         try:

@@ -35,7 +35,8 @@ def selectionCallback(event):
     mytext.set(memo1.index(INSERT))
 
 def doClose():
-    memo1.quit()    
+    f2.disconnect()
+    root.quit()    
 
 def doConnect():
     f2.doConnect("srtmoo.net",8492)
@@ -46,6 +47,7 @@ def doDisconnect():
 print("Hello")
 root = Tk()
 root.title("MooCoderPy Test")
+root.protocol("WM_DELETE_WINDOW",doClose)
 nb=ttk.Notebook(root)
 nb.pack(fill=BOTH,expand=True)
 ff=Frame(nb)

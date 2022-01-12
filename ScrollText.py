@@ -24,7 +24,11 @@ class ScrollText(tk.Text):
             msg=self.queue.get()
             self.addtext(msg)
             self.queue.task_done()
+        self.flush()
     
+    def flush(self):
+        pass
+
     def addtext(self,msg):
             self.textbox.insert("end",msg)
             self.textbox.see("end")
