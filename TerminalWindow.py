@@ -305,6 +305,7 @@ class TerminalWindow(ScrollText):
         self.taglist = []
         self.settag()
         self.listenthread=None
+        self.connectString=""
 
     def settag(self):
         tagname = self.myfontcolor + ";" + self.mycolor
@@ -452,11 +453,21 @@ class TerminalWindow(ScrollText):
         
     def doConnect(self, server, port):
         self.disconnect()
+        self.sendtext("Connecting to %s %d\n" % (server,port))
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((server, port))
         self.listenthread = threading.Thread(target=self.doListen)
         self.listenthread.start()
+        if (self.connectString!=""):
+            self.after(1000,self.sendCmd,self.connectString)
         print("Connected")
+
+    def sendCmd(self,cmd):
+        self.socket.send((cmd+"\n").encode("utf-8"))
+
+    def doConnectStr(self):
+        if (self.connectString!=""):
+            self.sendCmd(self.connectString)
 
     def disconnect(self):
         print("Disconnecting...")
@@ -467,5 +478,9 @@ class TerminalWindow(ScrollText):
             while True:
                 b = self.socket.recv(128)
                 self.sendtext(b.decode("utf-8"))
-        except ConnectionAbortedError:
-            print("Connection aborted.")
+        except ConnectionError as err:
+            print("Connection error: {0}".format(err))
+            try:
+                self.sendtext("Connection error: {0}".format(err))
+            except:
+                pass
