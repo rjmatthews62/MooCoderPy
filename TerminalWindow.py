@@ -471,14 +471,18 @@ class TerminalWindow(ScrollText):
 
     def disconnect(self):
         print("Disconnecting...")
-        self.socket.close()
+        try:
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+        except:
+            pass
 
     def doListen(self):
         try:
             while True:
                 b = self.socket.recv(128)
                 self.sendtext(b.decode("utf-8"))
-        except ConnectionError as err:
+        except Exception as err:
             print("Connection error: {0}".format(err))
             try:
                 self.sendtext("Connection error: {0}".format(err))

@@ -4,6 +4,8 @@ from queue import Queue
 from threading import Thread
 import time
 
+# Turns out there's a perfectly good scrolledtext component already, but this works as a useful wrapper anyway.
+
 class ScrollText(tk.Text):
     def __init__(self, parent, **kwargs):
         tk.Frame.__init__(self,parent)
