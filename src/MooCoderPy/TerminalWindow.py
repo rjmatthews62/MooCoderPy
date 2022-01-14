@@ -1,6 +1,8 @@
 from ScrollText import *
 from tkinter import *
+from tkinter import messagebox
 import socket, threading,select
+import SettingsDialog
 
 
 class TerminalWindow(ScrollText):
@@ -283,8 +285,21 @@ class TerminalWindow(ScrollText):
         "#eeeeee",
     )
 
+    def history(self,event):
+        print("Event: ",event)
+        if event.keysym=="Up":
+            self.historyidx+=1
+            if self.historyidx>=len(self.historylst):
+                self.historyidx=0
+        elif event.keysym=="Down":
+            self.historyidx-=1
+            if self.historyidx<0:
+                self.historyidx=len(self.historylst)-1
+        if (self.historyidx>=0 and self.historyidx<len(self.historylst)):
+            self.mytext.set(self.historylst[self.historyidx])
+
     def __init__(self, parent, **kwargs):
-        ScrollText.__init__(self, parent, **kwargs)
+        super().__init__(parent, **kwargs)
         self.bottom = Frame(self, bg="LightGray")
         self.bottom.pack(side=BOTTOM, fill=X)
         self.sendbtn = Button(self.bottom, text="Snd", command=self.doSend)
@@ -293,6 +308,8 @@ class TerminalWindow(ScrollText):
         self.sendbtn.pack(side=RIGHT)
         self.sendcmd.pack(fill=X, expand=True)
         self.sendcmd.bind("<Return>",self.doSendEvent)
+        self.sendcmd.bind("<Up>", self.history)
+        self.sendcmd.bind("<Down>", self.history)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.iscsi = False
@@ -307,6 +324,18 @@ class TerminalWindow(ScrollText):
         self.listenthread=None
         self.connectString=""
         self.stopping=False
+        self.lastline=""
+        self.capturestr=""
+        self.capturemode=0
+        self.capturefunc=None
+        self.external_edit=""
+        self.historylst=[]
+        self.historyidx=0
+        ifile=SettingsDialog.getConfig()
+        if ifile.has_section("history"):
+            for (key,value) in ifile.items("history"):
+                if key.isnumeric():
+                    self.historylst.append(value)
 
     def settag(self):
         tagname = self.myfontcolor + ";" + self.mycolor
@@ -331,6 +360,18 @@ class TerminalWindow(ScrollText):
             self.textbox.insert("end",self.output,self.currenttag)
             self.output=""
             self.textbox.see("end")
+
+    def saveSettings(self):
+        ifile=SettingsDialog.getConfig()
+        if (ifile.has_section("history")):
+            ifile.remove_section("history")
+        ifile.add_section("history")
+        h=ifile["history"]
+        for i in range(10):
+            if i>=len(self.historylst):
+                break
+            h[str(i)]=self.historylst[i]
+        SettingsDialog.saveConfig(ifile)
 
     def ResetStyle(self):
         self.isbold = False
@@ -439,8 +480,46 @@ class TerminalWindow(ScrollText):
             self.isesc = False
             self.iscsi = False
             self.currentparam = ""
-            self.output+=c
-#            self.textbox.insert("end", c, self.currenttag)
+            if self.capturemode!=1:
+                self.output+=c
+        if (c=="\n"):
+            self.processLine()
+            self.lastline=""
+        elif c!="\r":
+            self.lastline+=c
+
+    def processLine(self):
+        if self.capturemode==0:
+            if self.lastline.startswith("#$# edit"):
+                self.external_edit=self.lastline
+                self.capturemode=1
+                self.capturestr=""
+        elif self.capturemode==1:
+            if self.capturestr!="":
+                self.capturestr+="\n"
+            self.capturestr+=self.lastline
+            if (self.lastline=="."):
+                self.capturemode=0
+                (name,upload)=self.parseExternal()
+                self.capturefunc(self.capturestr,name)
+
+    def parseExternal(self):
+        try:
+            t=self.external_edit.split(" name: ")[1]
+            tt=t.split(" upload: ")
+            return (tt[0].strip(),tt[1].strip())
+        except:
+            return("","")
+    
+    def doupdate(self,text:str):
+        if self.external_edit=="":
+            messagebox.showwarning("Send Update","Not in @edit mode")
+            return False
+        upload=self.parseExternal()[1]    
+        self.sendCmd(upload)
+        self.sendCmd(text)
+        self.after(500,self.sendtext,"Update complete\n")
+        return True
 
     def doSend(self):
         s = self.mytext.get()
@@ -448,6 +527,8 @@ class TerminalWindow(ScrollText):
         self.mytext.set("")
         if self.socket != None:
             self.socket.send((s + "\n").encode("utf-8"))
+            self.historylst.insert(0,s)
+            self.historyidx=0
 
     def doSendEvent(self,event):
         self.doSend()
@@ -465,7 +546,9 @@ class TerminalWindow(ScrollText):
         print("Connected")
 
     def sendCmd(self,cmd):
-        self.socket.send((cmd+"\n").encode("utf-8"))
+        buf=(cmd+"\n").encode("utf-8")
+        self.socket.sendall(buf)
+        
 
     def doConnectStr(self):
         if (self.connectString!=""):

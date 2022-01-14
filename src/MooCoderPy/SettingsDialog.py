@@ -27,15 +27,20 @@ class SettingsDialog(tkinter.simpledialog.Dialog):
         settings=self.inifile["settings"]
         settings["Server"]=first
         settings["Connect"]=second
-        with open("moocoderpy.ini","w") as fp:
-            self.inifile.write(fp)
+        saveConfig(self.inifile)
 
 def getConfig():
     inifile=configparser.ConfigParser()
     inifile.read("moocoderpy.ini")
     if not inifile.has_section("settings"):
         inifile.add_section("settings")
+    if inifile.has_section("DEFAULT"):
+        inifile.remove_section("DEFAULT")
     return inifile
+
+def saveConfig(inifile):
+    with open("moocoderpy.ini","w") as fp:
+        inifile.write(fp)
 
 if __name__ == "__main__":
     

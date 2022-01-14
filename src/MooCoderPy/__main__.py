@@ -29,6 +29,7 @@ def doOpen():
 
 def doClose():
     f2.disconnect()
+    f2.saveSettings()
     root.quit()    
 
 def doConnect():
@@ -44,6 +45,21 @@ def doDisconnect():
 
 def doSettings():
     SettingsDialog.SettingsDialog(root,title="Server Configuration")
+
+def handlecapture(text:str, name:str):
+    memo1.delete("1.0","end")
+    memo1.insert("1.0",text)
+    nb.select(ff)
+    nb.tab(ff,text=name)
+
+def doupdate():
+    if f2.doupdate(memo1.get("1.0","end")):
+        nb.select(f2)
+
+def doTabChanged(event):
+    print("Tab changed",event)
+    if (nb.index(nb.select())==1):
+        f2.sendcmd.focus()
 
 print("Hello")
 root = Tk()
@@ -66,11 +82,17 @@ filemenu.add_command(label="Disconnect", command=doDisconnect, underline=0)
 filemenu.add_command(label="Exit", command=doClose,underline=1)
 settingmenu=Menu(menubar,tearoff=0)
 settingmenu.add_command(label="Server Config",command=doSettings, underline=0)
+editmenu=Menu(menubar,tearoff=0)
+editmenu.add_command(label="Send Update", command=doupdate, underline=0)
 menubar.add_cascade(label="File",menu=filemenu, underline=0)
 menubar.add_cascade(label="Settings", menu=settingmenu, underline=0)
+menubar.add_cascade(label="Edit", menu=editmenu, underline=0)
 root.config(menu=menubar)
 nb.enable_traversal()
+f2.capturefunc=handlecapture
+nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
 nb.select(f2)
+
 # Code to add widgets will go here...
 root.mainloop()
 print("Done")
