@@ -16,7 +16,7 @@
             "name": "Python: Project",
             "type": "python",
             "request": "launch",
-            "program": "test1.py",
+            "program": "src/MooCoderPy/__main__.py",
             "console": "integratedTerminal"
         }
 

@@ -1,6 +1,6 @@
 from ScrollText import *
 from tkinter import *
-import socket, threading
+import socket, threading,select
 
 
 class TerminalWindow(ScrollText):
@@ -306,6 +306,7 @@ class TerminalWindow(ScrollText):
         self.settag()
         self.listenthread=None
         self.connectString=""
+        self.stopping=False
 
     def settag(self):
         tagname = self.myfontcolor + ";" + self.mycolor
@@ -456,6 +457,7 @@ class TerminalWindow(ScrollText):
         self.sendtext("Connecting to %s %d\n" % (server,port))
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((server, port))
+        self.stopping=False
         self.listenthread = threading.Thread(target=self.doListen)
         self.listenthread.start()
         if (self.connectString!=""):
@@ -472,16 +474,24 @@ class TerminalWindow(ScrollText):
     def disconnect(self):
         print("Disconnecting...")
         try:
-            self.socket.shutdown(socket.SHUT_RDWR)
+            self.stopping=True
             self.socket.close()
+            if (self.listenthread!=None):
+                threading.join(self.listenthread)
+            self.listenthread=None
         except:
             pass
 
     def doListen(self):
         try:
             while True:
-                b = self.socket.recv(128)
-                self.sendtext(b.decode("utf-8"))
+                (readlist,writelist,exceptlist)=select.select([self.socket],[],[],1) 
+                if self.stopping:
+                    print("Listen thread stopping.")
+                    break
+                if self.socket in readlist:
+                    b = self.socket.recv(128)
+                    self.sendtext(b.decode("utf-8"))
         except Exception as err:
             print("Connection error: {0}".format(err))
             try:

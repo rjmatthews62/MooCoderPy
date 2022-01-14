@@ -1,12 +1,18 @@
-import socket,threading
+import socket,threading,select
 
 def doListen():
     try:
         while True:
-            b=s.recv(128)
-            print(b.decode("utf-8"),end="", sep="")
-    except ConnectionAbortedError:
-        print("Connection aborted.")
+            (readlist,writelist,exceptlist)=select.select([s],[],[s],1) 
+            if (s in readlist):
+                b=s.recv(128)
+                print(b.decode("utf-8"),end="", sep="")
+            elif (s in exceptlist):
+                print("Exception on socket")
+                break
+
+    except Exception as err:
+        print("Connection aborted.",err)
     
 
 print("Connecting...")
