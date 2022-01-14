@@ -4,6 +4,12 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk 
 from tkinter import scrolledtext
+import os,sys
+# Stupid packaging messes with paths...
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+print("SCRIPT_DIR=",SCRIPT_DIR)
+sys.path.append(SCRIPT_DIR)
+
 from ScrollText import *
 from TerminalWindow import *
 import SettingsDialog
