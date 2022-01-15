@@ -52,18 +52,24 @@ def handlecapture(text:str, name:str):
     nb.select(ff)
     nb.tab(ff,text=name)
 
-def doupdate():
+def doupdate(event=None):
     if f2.doupdate(memo1.get("1.0","end")):
         nb.select(f2)
 
 def doTabChanged(event):
     print("Tab changed",event)
-    if (nb.index(nb.select())==1):
+    tabname=nb.tab("current","text")
+    if (tabname=="Terminal"):
         f2.sendcmd.focus()
 
-print("Hello")
+if not("__VERSION+__" in globals()):
+    import importlib.metadata
+    __VERSION__ = importlib.metadata.version('MooCoderPy-rjmatthews62')
+
+print("MooCoderPy",__VERSION__)
 root = Tk()
-root.title("MooCoderPy Test")
+
+root.title("MooCoderPy "+__VERSION__)
 root.protocol("WM_DELETE_WINDOW",doClose)
 nb=ttk.Notebook(root)
 nb.pack(fill=BOTH,expand=True)
@@ -83,7 +89,8 @@ filemenu.add_command(label="Exit", command=doClose,underline=1)
 settingmenu=Menu(menubar,tearoff=0)
 settingmenu.add_command(label="Server Config",command=doSettings, underline=0)
 editmenu=Menu(menubar,tearoff=0)
-editmenu.add_command(label="Send Update", command=doupdate, underline=0)
+editmenu.add_command(label="Send Update F5", command=doupdate, underline=0)
+root.bind("<F5>",doupdate)
 menubar.add_cascade(label="File",menu=filemenu, underline=0)
 menubar.add_cascade(label="Settings", menu=settingmenu, underline=0)
 menubar.add_cascade(label="Edit", menu=editmenu, underline=0)

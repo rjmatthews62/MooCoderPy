@@ -16,9 +16,11 @@ File -> Open - Open a local file in the editor
 External Editor support:
 
 If you set @edit-option local+ on your MOO server, the @edit command will be redirected to MooCoderPy's internal editor.
-Selecting Edit->Send Update will issue the correct command to update whatever you are currently editing.
+Selecting Edit->Send Update (or F5) will issue the correct command to update whatever you are currently editing.
 
 Command History is support using the up and down arrow keys
 
 == Release History ==
+0.1.2 - Show version, added F5 shortcut, save recent history, set config file to home folder.
+
 0.1.1 - Added external editor support, command history

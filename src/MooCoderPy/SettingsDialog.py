@@ -1,6 +1,7 @@
 from tkinter import *
 import tkinter.simpledialog
 import configparser
+import os
 
 class SettingsDialog(tkinter.simpledialog.Dialog):
 
@@ -29,9 +30,12 @@ class SettingsDialog(tkinter.simpledialog.Dialog):
         settings["Connect"]=second
         saveConfig(self.inifile)
 
+def getConfigFile():
+    return os.path.expanduser("~/moocooderpy.ini")
+
 def getConfig():
     inifile=configparser.ConfigParser()
-    inifile.read("moocoderpy.ini")
+    inifile.read(getConfigFile())
     if not inifile.has_section("settings"):
         inifile.add_section("settings")
     if inifile.has_section("DEFAULT"):
@@ -39,7 +43,7 @@ def getConfig():
     return inifile
 
 def saveConfig(inifile):
-    with open("moocoderpy.ini","w") as fp:
+    with open(getConfigFile(),"w") as fp:
         inifile.write(fp)
 
 if __name__ == "__main__":
