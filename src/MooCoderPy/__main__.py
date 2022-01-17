@@ -4,7 +4,9 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk 
 from tkinter import scrolledtext
+from tkinter import simpledialog
 import os,sys
+from turtle import width
 # Stupid packaging messes with paths...
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 print("SCRIPT_DIR=",SCRIPT_DIR)
@@ -28,8 +30,8 @@ def doOpen():
             memo1.insert("1.0",data)
 
 def doClose():
-    f2.disconnect()
-    f2.saveSettings()
+    tw.disconnect()
+    tw.saveSettings()
     root.quit()    
 
 def doConnect():
@@ -37,11 +39,11 @@ def doConnect():
     server=inifile["settings"]["Server"]
     connectstr=inifile["settings"]["Connect"]
     (server,port)=server.split(":")
-    f2.connectString=connectstr
-    f2.doConnect(server,int(port))
+    tw.connectString=connectstr
+    tw.doConnect(server,int(port))
 
 def doDisconnect():
-    f2.disconnect()
+    tw.disconnect()
 
 def doSettings():
     SettingsDialog.SettingsDialog(root,title="Server Configuration")
@@ -53,14 +55,43 @@ def handlecapture(text:str, name:str):
     nb.tab(ff,text=name)
 
 def doupdate(event=None):
-    if f2.doupdate(memo1.get("1.0","end")):
-        nb.select(f2)
+    if tw.doupdate(memo1.get("1.0","end")):
+        nb.select(tw)
 
 def doTabChanged(event):
     print("Tab changed",event)
     tabname=nb.tab("current","text")
     if (tabname=="Terminal"):
-        f2.sendcmd.focus()
+        tw.sendcmd.focus()
+
+def donewtab(event=None):
+    """Load a verb into a new tab"""
+    verb=simpledialog.askstring("Verb","Enter Object:Verb")
+    if (verb):
+        tw.loadVerb(verb)
+
+def buildMenu():
+    menubar=Menu(root)
+    filemenu=Menu(menubar,tearoff=0)
+    filemenu.add_command(label="Open", command=doOpen,underline=0)
+    filemenu.add_command(label="Connect", command=doConnect,underline=0)
+    filemenu.add_command(label="Disconnect", command=doDisconnect, underline=0)
+    filemenu.add_command(label="Exit", command=doClose,underline=1)
+    settingmenu=Menu(menubar,tearoff=0)
+    settingmenu.add_command(label="Server Config",command=doSettings, underline=0)
+    editmenu=Menu(menubar,tearoff=0)
+    editmenu.add_command(label="Send Update F5", command=doupdate, underline=0)
+    root.bind("<F5>",doupdate)
+    projectmenu=Menu(menubar,tearoff=0)
+    projectmenu.add_command(label="New Tab Ctrl+N",command=donewtab,underline=0)
+    # Apparently the key binding is case sensitive...
+    root.bind("<Control-Key-N>",donewtab)
+    root.bind("<Control-Key-n>",donewtab)
+    menubar.add_cascade(label="File",menu=filemenu, underline=0)
+    menubar.add_cascade(label="Settings", menu=settingmenu, underline=0)
+    menubar.add_cascade(label="Edit", menu=editmenu, underline=0)
+    menubar.add_cascade(label="Project",menu=projectmenu, underline=0)
+    root.config(menu=menubar)
 
 if not("__VERSION+__" in globals()):
     import importlib.metadata
@@ -74,32 +105,30 @@ root.protocol("WM_DELETE_WINDOW",doClose)
 nb=ttk.Notebook(root)
 nb.pack(fill=BOTH,expand=True)
 ff=Frame(nb)
+tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+nb.add(tw,text="Terminal")
 nb.add(ff,text="Edit")
-f2=TerminalWindow(nb,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
-nb.add(f2,text="Terminal")
 memo1 = scrolledtext.ScrolledText(ff,insertbackground="white");
 memo1.config({"background":"black","foreground":"white","font":("Courier",12,"bold")})
 memo1.pack(fill=BOTH,expand=True)
-menubar=Menu(root)
-filemenu=Menu(menubar,tearoff=0)
-filemenu.add_command(label="Open", command=doOpen,underline=0)
-filemenu.add_command(label="Connect", command=doConnect,underline=0)
-filemenu.add_command(label="Disconnect", command=doDisconnect, underline=0)
-filemenu.add_command(label="Exit", command=doClose,underline=1)
-settingmenu=Menu(menubar,tearoff=0)
-settingmenu.add_command(label="Server Config",command=doSettings, underline=0)
-editmenu=Menu(menubar,tearoff=0)
-editmenu.add_command(label="Send Update F5", command=doupdate, underline=0)
-root.bind("<F5>",doupdate)
-menubar.add_cascade(label="File",menu=filemenu, underline=0)
-menubar.add_cascade(label="Settings", menu=settingmenu, underline=0)
-menubar.add_cascade(label="Edit", menu=editmenu, underline=0)
-root.config(menu=menubar)
-nb.enable_traversal()
-f2.capturefunc=handlecapture
-nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
-nb.select(f2)
 
+verbframe=Frame(nb)
+nb.add(verbframe,text="Verbs")
+verblist=ttk.Treeview(verbframe,columns=("c1","c2","c3","c4"))
+verblist.heading("#0",text="Obj")
+verblist.heading("c1",text="Name")
+verblist.heading("c2",text="Verb")
+verblist.heading("c3",text="Args")
+verblist.heading("c4",text="Detail")
+verblist.column("#0",stretch=False,width=50)
+for i in range(3):
+    verblist.column(i,stretch=False,width=50)
+verblist.pack(fill=BOTH, expand=True)
+nb.enable_traversal()
+tw.capturefunc=handlecapture
+nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
+nb.select(tw)
+buildMenu()
 # Code to add widgets will go here...
 root.mainloop()
 print("Done")

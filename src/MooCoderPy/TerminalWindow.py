@@ -346,6 +346,16 @@ class TerminalWindow(ScrollText):
             self.textbox.tag_config(tagname, cfg)
             self.taglist.append(tagname)
         self.currenttag = tagname
+    
+    def parseVerb(self,verb):
+        if value.StartsWith('@') then parse(value);
+        obj:=parseSepFIeld(value,':');
+        verb:=parse(value);
+        if (verb.StartsWith('"')) then verb:=GetSepField(verb,2,'"');
+        i:=pos('*',verb);
+        if (i>0) then verb:=copy(verb,1,i-1);
+        result:=(verb<>'') and (obj<>'');
+
 
     def addtext(self, msg):
         for c in msg:
@@ -545,6 +555,9 @@ class TerminalWindow(ScrollText):
             self.after(1000,self.sendCmd,self.connectString)
         print("Connected")
 
+    def loadVerb(self,verbdef):
+        pass
+    
     def sendCmd(self,cmd):
         buf=(cmd+"\n").encode("utf-8")
         self.socket.sendall(buf)
