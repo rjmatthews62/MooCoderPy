@@ -21,6 +21,13 @@ class ScrollText(tk.Text):
         self.queue.put(msg)
         self.event_generate("<<sendtext>>",when='tail')
     
+    def addln(self,line:str):
+        self.textbox.insert("end","\n"+line)
+        self.textbox.see("end")
+    
+    def clear(self):
+        self.textbox.delete("1.0","end")
+        
     def handletext(self,event):
         while not self.queue.empty():
             msg=self.queue.get()

@@ -62,13 +62,18 @@ def doTabChanged(event):
     print("Tab changed",event)
     tabname=nb.tab("current","text")
     if (tabname=="Terminal"):
-        tw.sendcmd.focus()
+        tw.sendEntry.focus()
 
 def donewtab(event=None):
     """Load a verb into a new tab"""
     verb=simpledialog.askstring("Verb","Enter Object:Verb")
     if (verb):
         tw.loadVerb(verb)
+
+def viewStack(event=None):
+    """Make stack visible."""
+    global stackloaded
+    mainpack(not stackloaded)
 
 def buildMenu():
     menubar=Menu(root)
@@ -91,7 +96,21 @@ def buildMenu():
     menubar.add_cascade(label="Settings", menu=settingmenu, underline=0)
     menubar.add_cascade(label="Edit", menu=editmenu, underline=0)
     menubar.add_cascade(label="Project",menu=projectmenu, underline=0)
+    viewmenu=Menu(menubar,tearoff=0)
+    viewmenu.add_command(label="Stack", command=viewStack,underline=0)
+    menubar.add_cascade(label="View",menu=viewmenu,underline=0)
     root.config(menu=menubar)
+
+def mainpack(usestack:bool):
+    """Pack the main window so it's possible to hide and reload stack"""
+    global stackloaded
+    nb.pack_forget()
+    stack.pack_forget()
+    nb.pack(side=LEFT, fill=Y)
+    if usestack:
+        stack.pack(side=LEFT,fill=Y)
+    nb.pack(fill=BOTH,expand=True)
+    stackloaded=usestack
 
 if not("__VERSION+__" in globals()):
     import importlib.metadata
@@ -102,10 +121,14 @@ root = Tk()
 
 root.title("MooCoderPy "+__VERSION__)
 root.protocol("WM_DELETE_WINDOW",doClose)
+stack=Text(root,width=40)
 nb=ttk.Notebook(root)
-nb.pack(fill=BOTH,expand=True)
+mainpack(False)
+
 ff=Frame(nb)
 tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+tw.setstackvisible=mainpack
+tw.stack=stack
 nb.add(tw,text="Terminal")
 nb.add(ff,text="Edit")
 memo1 = scrolledtext.ScrolledText(ff,insertbackground="white");
@@ -128,6 +151,7 @@ nb.enable_traversal()
 tw.capturefunc=handlecapture
 nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
 nb.select(tw)
+tw.pages=nb
 buildMenu()
 # Code to add widgets will go here...
 root.mainloop()

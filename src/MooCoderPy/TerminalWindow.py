@@ -1,11 +1,20 @@
+from tkinter import simpledialog
+from tkinter.ttk import Notebook
 from ScrollText import *
 from tkinter import *
 from tkinter import messagebox
 import socket, threading,select
 import SettingsDialog
+from wgplib import *
 
 
 class TerminalWindow(ScrollText):
+    pages:Notebook=None
+    getstack:bool=False
+    setstackvisible=None
+    stack:Text=None
+    errorverb:str=""
+
     ColorTable = (
         "#000000",
         "#c00000",
@@ -304,12 +313,12 @@ class TerminalWindow(ScrollText):
         self.bottom.pack(side=BOTTOM, fill=X)
         self.sendbtn = Button(self.bottom, text="Snd", command=self.doSend)
         self.mytext = StringVar()
-        self.sendcmd = Entry(self.bottom, textvariable=self.mytext)
+        self.sendEntry = Entry(self.bottom, textvariable=self.mytext)
         self.sendbtn.pack(side=RIGHT)
-        self.sendcmd.pack(fill=X, expand=True)
-        self.sendcmd.bind("<Return>",self.doSendEvent)
-        self.sendcmd.bind("<Up>", self.history)
-        self.sendcmd.bind("<Down>", self.history)
+        self.sendEntry.pack(fill=X, expand=True)
+        self.sendEntry.bind("<Return>",self.doSendEvent)
+        self.sendEntry.bind("<Up>", self.history)
+        self.sendEntry.bind("<Down>", self.history)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.iscsi = False
@@ -329,6 +338,9 @@ class TerminalWindow(ScrollText):
         self.capturemode=0
         self.capturefunc=None
         self.external_edit=""
+        self.verbcollect=''
+        self.onExamineLine=None
+
         self.historylst=[]
         self.historyidx=0
         ifile=SettingsDialog.getConfig()
@@ -347,15 +359,20 @@ class TerminalWindow(ScrollText):
             self.taglist.append(tagname)
         self.currenttag = tagname
     
-    def parseVerb(self,verb):
-        if value.StartsWith('@') then parse(value);
-        obj:=parseSepFIeld(value,':');
-        verb:=parse(value);
-        if (verb.StartsWith('"')) then verb:=GetSepField(verb,2,'"');
-        i:=pos('*',verb);
-        if (i>0) then verb:=copy(verb,1,i-1);
-        result:=(verb<>'') and (obj<>'');
-
+    def parseVerb(self,value):
+        """Return (obj,verb), or False if not valid."""
+        if value.startswith('@'):
+             value=parse(value)[1]
+        (obj,value)=parsesep(value,':')
+        (verb,value)=parse(value)
+        if verb.startswith('"'):
+             verb=getsepfield(verb,1,'"')
+        i=verb.find("*")
+        if (i>=0):
+            verb=verb[0:i]
+        if (verb!='') and (obj!=''):
+            return (obj,verb)
+        return False
 
     def addtext(self, msg):
         for c in msg:
@@ -504,6 +521,8 @@ class TerminalWindow(ScrollText):
                 self.external_edit=self.lastline
                 self.capturemode=1
                 self.capturestr=""
+            elif self.onExamineLine:
+                self.onExamineLine(self.lastline)
         elif self.capturemode==1:
             if self.capturestr!="":
                 self.capturestr+="\n"
@@ -512,6 +531,111 @@ class TerminalWindow(ScrollText):
                 self.capturemode=0
                 (name,upload)=self.parseExternal()
                 self.capturefunc(self.capturestr,name)
+
+    def selectError(self,obj:str,verb:str,lno:int)->bool:
+        tabs=self.pages.tabs()
+        for i in range(2,len(tabs)):
+            w=self.pages.nametowidget(tabs[i])
+            if (type(w) is ScrollText):
+                re:Text=w.textbox
+                lines=re.get("1.0","end").splitlines()
+                if (len(lines)>0 and (lines[0]+" ").lower().find(obj+':'+verb+' ')>=0):
+                    self.pages.select(i)
+                    start=str(lno+1)+'.0'
+                    end=str(lno+1)+".end"
+                    re.see(start)
+                    re.focus_set()
+                    re.tag_add(SEL,start,end)
+                    #pagesChange(self);
+                    return True
+        return False
+    
+    def currentEditor(self)->Text:
+        w=self.nametowidget(self.pages.select())
+        if (type(w) is ScrollText):
+            return w.textbox
+        return None
+
+    def addtarget(self,dest:Text, line:str):
+        dest.insert("end",line+"\n")
+        dest.see("end")
+
+    def doChecktest(self,line:str):
+        """Check for stack trace messages"""
+        if self.getstack: 
+            self.addtarget(self.stack,line)
+        # #540:test (this == #540), line 5:  Type mismatch (expected integer; got float)
+        # #151:+attacks, line 9:  Verb not found: #548:energy_cast()
+        # #151:+deploy deploy, line 28:  Range error
+        if line.startswith('#') and line.find(', line')>=0:
+            startline=line
+            (prog,line)=parsesep(line,',')
+            line=parse(line)[1] # Skip "line"
+            (lno,line)=parsesep(line,':')
+            (obj,verb)=self.parseVerb(prog)    #Should strip out trailing defs.
+            error=line
+            self.getstack=True
+            self.stack.delete("1.0","end")
+            self.addtarget(self.stack,'Stack')
+            self.addtarget(self.stack,error)
+            self.addtarget(self.stack,obj+':'+verb+', line '+lno)
+            self.setstackvisible(True)
+            self.errorverb=''
+            if not self.selectError(obj,verb,int(lno)):
+                self.errorverb=verb
+                self.errorobj=obj
+                self.lastlno=int(lno)
+        elif (line=='(End of traceback)'):
+            self.getstack=False
+            if self.errorverb!='':
+                self.findVerb(self.errorobj,self.errorverb,self.lastlno)
+            self.errorverb=''
+
+    def addTab(self,caption:str,text:str,tabtype:int):
+        t=ScrollText(self.pages,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+        self.pages.add(t,text=caption)
+        t.textbox.insert("1.0",text)
+
+    def doCheckVerb(self, line:str):
+        if (line=='***finished***'):
+            self.onExamineLine=self.doChecktest
+            t=self.verbcollect.splitlines()
+            t.append(".")
+            prog=t[0]
+            if (prog=='That object does not define that verb.'):
+                messagebox('Verb not found.');
+                return
+            for i in range(len(t)):
+                if t[i].endswith('[normal]'): # Stupid ansi is stupid.
+                    s=t[i]
+                    t[i]=s[0:len(s)-len('[normal]')]
+            (obj,prog)=parsesep(prog,':')
+            args=prog;
+            if (args.startswith('"')):
+                args=args.replace('"','').strip()
+            (verb,prog)=parse(prog)
+            if (verb.startswith('"')):
+                verb=getsepfield(verb,1,'"')
+            i=verb.find('*')
+            if (i>=0):
+                verb=verb[0:i]
+            t[0]='@program '+obj+':'+verb
+            if self.selectError(obj,verb,self.lastlno):
+                re=self.currentEditor()
+                re.delete("1.0","end")
+                re.insert("1.0","\n".join(t))
+                re.see(str(self.lastlno)+":0")
+            else:
+                self.addTab(obj+':'+verb,"\n".join(t),1)
+                self.selectError(obj,verb,self.lastlno)
+            self.lastlno=0
+#            CheckName(obj);
+#            arglist.values[obj+':'+verb]:=args;
+#            verblist.Add(obj+':'+verb);
+#            UpdateVerbs;
+        else:
+            self.verbcollect+=line+"\n"
+
 
     def parseExternal(self):
         try:
@@ -556,8 +680,26 @@ class TerminalWindow(ScrollText):
         print("Connected")
 
     def loadVerb(self,verbdef):
-        pass
+        v=self.parseVerb(verbdef)
+        if not v:
+            messagebox.showwarning("Invalid Verb Syntax")
+            return
+        (obj,verb)=v
+        self.findVerb(obj,verb,0)
+
+    def findVerb(self,obj:str,verb:str, lno:int):
+        self.lastlno=lno
+        if (obj=='#-1'):
+            return # Not a real verb.
+        #if not(self.selectError(obj,verb,lno)):
+        self.fetchVerb(obj,verb)
     
+    def fetchVerb(self,obj,verb):
+        self.sendCmd('@list '+obj+':'+verb+' without numbers')
+        self.sendCmd(';player:tell("***finished***")')
+        self.verbcollect=''
+        self.onExamineLine=self.doCheckVerb;
+
     def sendCmd(self,cmd):
         buf=(cmd+"\n").encode("utf-8")
         self.socket.sendall(buf)
