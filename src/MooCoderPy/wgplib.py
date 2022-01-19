@@ -26,3 +26,24 @@ def getsepfield(s:str, n:int, sep:str=","):
         return ""
     return list[n]
 
+def atol(s:str)->int:
+    """Convert string to int in a relaxed fashion... ie, stop when non-integer found."""
+    result=""
+    for c in s:
+        if c=="-" and result=="":
+            result+=c
+        elif c==" ":
+            continue
+        elif c.isdigit():
+            result+=c
+        else:
+            break
+    try:    
+        result=int(result)
+    except:
+        result=0
+
+    return result
+if __name__=="__main__":
+    print(atol("1234x"))
+    print(atol("-234 this is a test"))

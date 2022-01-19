@@ -55,8 +55,12 @@ def handlecapture(text:str, name:str):
     nb.tab(ff,text=name)
 
 def doupdate(event=None):
-    if tw.doupdate(memo1.get("1.0","end")):
-        nb.select(tw)
+    re=tw.currentPage()
+    if (re.tabtype==1):
+        tw.docompile(re)
+    elif re.tagtype==0:
+        if tw.doupdate(memo1.get("1.0","end")):
+            nb.select(tw)
 
 def doTabChanged(event):
     print("Tab changed",event)
@@ -121,7 +125,7 @@ root = Tk()
 
 root.title("MooCoderPy "+__VERSION__)
 root.protocol("WM_DELETE_WINDOW",doClose)
-stack=Text(root,width=40)
+stack=Text(root,width=50)
 nb=ttk.Notebook(root)
 mainpack(False)
 
@@ -144,11 +148,12 @@ verblist.heading("c2",text="Verb")
 verblist.heading("c3",text="Args")
 verblist.heading("c4",text="Detail")
 verblist.column("#0",stretch=False,width=50)
-for i in range(3):
-    verblist.column(i,stretch=False,width=50)
+for i in range(2):
+    verblist.column(i,stretch=False,width=80)
 verblist.pack(fill=BOTH, expand=True)
 nb.enable_traversal()
 tw.capturefunc=handlecapture
+tw.lvVerbs=verblist
 nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
 nb.select(tw)
 tw.pages=nb

@@ -7,6 +7,8 @@ import time
 # Turns out there's a perfectly good scrolledtext component already, but this works as a useful wrapper anyway.
 
 class ScrollText(tk.Text):
+    tabtype=0
+
     def __init__(self, parent, **kwargs):
         tk.Frame.__init__(self,parent)
         self.textbox=tk.Text(self,**kwargs)
@@ -27,7 +29,7 @@ class ScrollText(tk.Text):
     
     def clear(self):
         self.textbox.delete("1.0","end")
-        
+
     def handletext(self,event):
         while not self.queue.empty():
             msg=self.queue.get()

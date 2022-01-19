@@ -14,6 +14,11 @@ class TerminalWindow(ScrollText):
     setstackvisible=None
     stack:Text=None
     errorverb:str=""
+    arglist={}
+    verblist=[]
+    namelist={}
+    lastobj:str=""
+    lvVerbs:ttk.Treeview=None
 
     ColorTable = (
         "#000000",
@@ -551,16 +556,22 @@ class TerminalWindow(ScrollText):
         return False
     
     def currentEditor(self)->Text:
-        w=self.nametowidget(self.pages.select())
+        w=self.currentPage()
         if (type(w) is ScrollText):
             return w.textbox
+        return None
+
+    def currentPage(self)->ScrollText:
+        w=self.nametowidget(self.pages.select())
+        if (type(w) is ScrollText):
+            return w
         return None
 
     def addtarget(self,dest:Text, line:str):
         dest.insert("end",line+"\n")
         dest.see("end")
 
-    def doChecktest(self,line:str):
+    def doCheckTest(self,line:str):
         """Check for stack trace messages"""
         if self.getstack: 
             self.addtarget(self.stack,line)
@@ -590,20 +601,56 @@ class TerminalWindow(ScrollText):
             if self.errorverb!='':
                 self.findVerb(self.errorobj,self.errorverb,self.lastlno)
             self.errorverb=''
+    
+    def doCheckCompile(self,line:str)->None:
+        """Check that verb has compiled"""
+#        var lno,x,n:Integer; s1,s2:String;  e:TEdit;
+#        adddebug(line);
+        if (line.startswith('Line ')):
+            (s1,line)=parsesep(line,':');
+            lno=atol(s1[4:])
+            self.stack.delete("1.0","end")
+            self.stack.insert("1.0","Compile Error\n"+line)
+            self.setstackvisible(True)
+            re=self.currentEditor()
+            ix=str(lno+1)+".0"
+            re.mark_set(INSERT,ix)
+            re.see(ix)
+            re.tag_add(SEL,ix,str(lno+1)+".end")
+            re.focus_set()
+#            adddebug('Error found: '+line);
+        elif line=='Verb not programmed.':
+            self.onExamineLine=self.doCheckTest
+        elif line=='Verb programmed.':
+#            adddebug('Compiled OK.');
+            self.onExamineLine=self.doCheckTest
+            if False:
+#            SetChanged(CurrentEditor,false);
+#            e:=CurrentTest;
+#            if assigned(e) and (trim(e.Text)<>'') then
+#            begin
+#            msgqueue.add(e.Text);
+#            testtab:=pages.ActivePage;
+#            onExamineLine:=DoChecktest;
+                self.getstack=False
+                self.pages.select(self)
+            else:
+                 self.showmessage(line)
 
     def addTab(self,caption:str,text:str,tabtype:int):
         t=ScrollText(self.pages,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
         self.pages.add(t,text=caption)
         t.textbox.insert("1.0",text)
+        t.tabtype=tabtype
 
     def doCheckVerb(self, line:str):
         if (line=='***finished***'):
-            self.onExamineLine=self.doChecktest
+            self.onExamineLine=self.doCheckTest
             t=self.verbcollect.splitlines()
             t.append(".")
             prog=t[0]
             if (prog=='That object does not define that verb.'):
-                messagebox('Verb not found.');
+                messagebox.showwarning("MooCoderPy",'Verb not found.')
                 return
             for i in range(len(t)):
                 if t[i].endswith('[normal]'): # Stupid ansi is stupid.
@@ -629,13 +676,69 @@ class TerminalWindow(ScrollText):
                 self.addTab(obj+':'+verb,"\n".join(t),1)
                 self.selectError(obj,verb,self.lastlno)
             self.lastlno=0
-#            CheckName(obj);
-#            arglist.values[obj+':'+verb]:=args;
-#            verblist.Add(obj+':'+verb);
-#            UpdateVerbs;
+            self.checkName(obj)
+            self.arglist[obj+':'+verb]=args
+            self.verblist.append(obj+':'+verb)
+            self.updateVerbs()
         else:
             self.verbcollect+=line+"\n"
+    
+    def checkName(self,obj:str)->None:
+        """Check that we know the name of an object."""
+        if not(obj in self.namelist):
+            self.sendCmd(';'+obj+'.name')
+            self.onExamineLine=self.doCheckName
+        self.lastobj=obj
+    
+    def doCheckName(self,line:str):
+        """Examine stream for name of object."""
+        if line.lower().find('***finished***')>=0:
+            return # Ignore trailing stuff.
+        if line.startswith('=> 0'):
+            return # tailing result.
+        self.onExamineLine=self.doCheckTest
+        if not(line.startswith('=>')):
+            self.addln('Name not found.')
+            return
+        aname=getsepfield(line,1,'"')
+        self.namelist[self.lastobj]=aname
+        self.updateVerbs
+    
+    def findVerbHelp(self,obj:str,verb:str)->str:
+        return ""
 
+    def updateVerbs(self)->None:
+        """Update Verb list window"""
+#        var nd:TListItem; s:String; obj,verb:String;
+#            oldverb,oldobj:String; i:Integer;
+#        lvVerbs.Items.BeginUpdate;
+        oldverb=''
+        nd=self.lvVerbs.item(self.lvVerbs.focus())
+        if nd["text"]!="":
+            oldobj=nd["text"].lower()
+            oldverb=nd["values"][1].lower()
+        for i in self.lvVerbs.get_children(): #Clear list
+            self.lvVerbs.delete(i)
+        for s in self.verblist:
+            obj=getsepfield(s,0,':')
+            verb=getsepfield(s,1,':')
+            name=self.namelist[obj] if obj in self.namelist else obj
+            values=(name,verb,self.arglist[s],self.findVerbHelp(obj,verb))
+            self.lvVerbs.insert("","end",text=obj,values=values)
+            self.fitListContents(self.lvVerbs)
+        if oldverb!="":
+            for i in self.lvVerbs.get_children():
+                nd=self.lvVerbs.items(i)
+                if nd["text"].lower()==oldobj and nd["values"][1].lower()==oldverb:
+                    self.lvVerbs.selection_set(i)
+                    self.lvVerbs.see(i)
+                    break
+
+    def fitListContents(self,alist:ttk.Treeview):
+        cols=alist.cget("columns")
+        colnames=["#0"]+list(cols)
+        print("cols",cols,colnames)
+        
 
     def parseExternal(self):
         try:
@@ -654,6 +757,12 @@ class TerminalWindow(ScrollText):
         self.sendCmd(text)
         self.after(500,self.sendtext,"Update complete\n")
         return True
+    
+    def docompile(self,page:ScrollText):
+        if not(type(page) is ScrollText):
+            return
+        self.sendCmd(page.textbox.get("1.0","end"))
+        self.onExamineLine=self.doCheckCompile
 
     def doSend(self):
         s = self.mytext.get()
@@ -678,11 +787,13 @@ class TerminalWindow(ScrollText):
         if (self.connectString!=""):
             self.after(1000,self.sendCmd,self.connectString)
         print("Connected")
+    def showmessage(self,msg):
+        messagebox.showinfo("MooCoderPy",msg)
 
     def loadVerb(self,verbdef):
         v=self.parseVerb(verbdef)
         if not v:
-            messagebox.showwarning("Invalid Verb Syntax")
+            self.showmessage("Invalid Verb Syntax")
             return
         (obj,verb)=v
         self.findVerb(obj,verb,0)

@@ -18,9 +18,20 @@ External Editor support:
 If you set @edit-option local+ on your MOO server, the @edit command will be redirected to MooCoderPy's internal editor.
 Selecting Edit->Send Update (or F5) will issue the correct command to update whatever you are currently editing.
 
-Command History is support using the up and down arrow keys
+Project->New Tab (Ctrl+N) - Loads a verb into its own tab. Press F5 to compile.
+
+Basic error checking and stack trace implemented.
+
+Command History is supported using the up and down arrow keys
+
+== TODO ==
+* Syntax highlighting
+* Double click on errors
+* Verb List for Object
+* Automated tests
 
 == Release History ==
+0.1.3 - Edit Verb (Edit->New Tab)
 0.1.2 - Show version, added F5 shortcut, save recent history, set config file to home folder.
 
 0.1.1 - Added external editor support, command history
