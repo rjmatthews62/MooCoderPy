@@ -7,6 +7,7 @@ from tkinter import scrolledtext
 from tkinter import simpledialog
 import os,sys
 from turtle import width
+from MooCoderPy.SettingsDialog import getConfig
 # Stupid packaging messes with paths...
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 print("SCRIPT_DIR=",SCRIPT_DIR)
@@ -93,6 +94,10 @@ def buildMenu():
     root.bind("<F5>",doupdate)
     projectmenu=Menu(menubar,tearoff=0)
     projectmenu.add_command(label="New Tab Ctrl+N",command=donewtab,underline=0)
+    projectmenu.add_command(label="Get Verbs Ctrl+Shift+V",command=tw.getVerbs,underline=0)
+    root.bind("<Control-Shift-Key-V>",tw.getVerbs)
+    root.bind("<Control-Shift-Key-v>",tw.getVerbs)
+    
     # Apparently the key binding is case sensitive...
     root.bind("<Control-Key-N>",donewtab)
     root.bind("<Control-Key-n>",donewtab)
@@ -115,6 +120,14 @@ def mainpack(usestack:bool):
         stack.pack(side=LEFT,fill=Y)
     nb.pack(fill=BOTH,expand=True)
     stackloaded=usestack
+
+def loadSettings():
+    ifile=SettingsDialog.getConfig()
+    tw.dumpobject=ifile['settings'].get('LastDump',"")
+
+def doVerbDblClick(event=None):
+    nd=verblist.item(verblist.selection())
+    tw.loadVerb(nd["text"]+":"+nd["values"][1])
 
 if not("__VERSION+__" in globals()):
     import importlib.metadata
@@ -151,6 +164,7 @@ verblist.column("#0",stretch=False,width=50)
 for i in range(2):
     verblist.column(i,stretch=False,width=80)
 verblist.pack(fill=BOTH, expand=True)
+verblist.bind("<Double-Button-1>",doVerbDblClick)
 nb.enable_traversal()
 tw.capturefunc=handlecapture
 tw.lvVerbs=verblist
@@ -158,6 +172,7 @@ nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
 nb.select(tw)
 tw.pages=nb
 buildMenu()
+loadSettings()
 # Code to add widgets will go here...
 root.mainloop()
 print("Done")

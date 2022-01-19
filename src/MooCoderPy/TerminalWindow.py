@@ -19,6 +19,7 @@ class TerminalWindow(ScrollText):
     namelist={}
     lastobj:str=""
     lvVerbs:ttk.Treeview=None
+    dumpobject:str=""
 
     ColorTable = (
         "#000000",
@@ -403,6 +404,7 @@ class TerminalWindow(ScrollText):
             if i>=len(self.historylst):
                 break
             h[str(i)]=self.historylst[i]
+        ifile["settings"]['LastDump']=self.dumpobject
         SettingsDialog.saveConfig(ifile)
 
     def ResetStyle(self):
@@ -702,7 +704,7 @@ class TerminalWindow(ScrollText):
             return
         aname=getsepfield(line,1,'"')
         self.namelist[self.lastobj]=aname
-        self.updateVerbs
+        self.updateVerbs()
     
     def findVerbHelp(self,obj:str,verb:str)->str:
         return ""
@@ -723,12 +725,13 @@ class TerminalWindow(ScrollText):
             obj=getsepfield(s,0,':')
             verb=getsepfield(s,1,':')
             name=self.namelist[obj] if obj in self.namelist else obj
-            values=(name,verb,self.arglist[s],self.findVerbHelp(obj,verb))
+            args=self.arglist[s] if s in self.arglist else ""
+            values=(name,verb,args,self.findVerbHelp(obj,verb))
             self.lvVerbs.insert("","end",text=obj,values=values)
-            self.fitListContents(self.lvVerbs)
+        self.fitListContents(self.lvVerbs)
         if oldverb!="":
             for i in self.lvVerbs.get_children():
-                nd=self.lvVerbs.items(i)
+                nd=self.lvVerbs.item(i)
                 if nd["text"].lower()==oldobj and nd["values"][1].lower()==oldverb:
                     self.lvVerbs.selection_set(i)
                     self.lvVerbs.see(i)
@@ -847,3 +850,31 @@ class TerminalWindow(ScrollText):
                 self.sendtext("Connection error: {0}".format(err))
             except:
                 pass
+    def getVerbs(self,event:Event=None):
+        s=simpledialog.askstring('Verbs','Load Verb list for object:', initialvalue=self.dumpobject)
+        if (s):
+            self.dumpobject=s
+            self.sendCmd('@verbs '+self.dumpobject)
+            self.onExamineLine=self.doCheckVerbs
+
+    def doCheckVerbs(self,line:str)->None:
+        """Fetch verbs for an object"""
+        self.onExamineLine=self.doCheckTest
+        if not(line.lower().startswith(';verb')):
+            messagebox.showerror("MooCoderPy","Verb not found.\n"+line)
+            return
+        line=parsesep(line,'(')[1]
+        (obj,line)=parsesep(line,')')
+        line=parsesep(line,'{')[1]
+        line=line.strip()
+        if line.endswith('}'):
+            line=line[0:len(line)-1]
+        self.verblist=[x for x in self.verblist if not(x.startswith(obj+":"))]    
+        t=line.split(",")
+        for s1 in t:
+            s=s1.strip()[1:]
+            s=s[0:len(s)-1]
+            verb=getfield(s,0)
+            self.verblist.append(obj+':'+verb);
+        self.checkName(obj)
+        self.updateVerbs()

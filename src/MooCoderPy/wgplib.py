@@ -26,6 +26,13 @@ def getsepfield(s:str, n:int, sep:str=","):
         return ""
     return list[n]
 
+def getfield(s:str, n:int):
+    """Get nth worh in s, separated by whitespace."""
+    list=s.split()
+    if n<0 or n>=len(list):
+        return ""
+    return list[n]
+
 def atol(s:str)->int:
     """Convert string to int in a relaxed fashion... ie, stop when non-integer found."""
     result=""
