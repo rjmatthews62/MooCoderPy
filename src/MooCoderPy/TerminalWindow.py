@@ -573,7 +573,7 @@ class TerminalWindow(ScrollText):
                 result=s
         return result
 
-    def findVerbEditor(self,obj:str, verb:str)->ScrollText | None:
+    def findVerbEditor(self,obj:str, verb:str):
         searchverb=getsepfield(verb,0,'*') # Handle wildcards.
         for i in self.pages.tabs():
             w=self.pages.nametowidget(i)
@@ -705,7 +705,7 @@ class TerminalWindow(ScrollText):
                 re=self.currentEditor()
                 re.delete("1.0","end")
                 re.insert("1.0","\n".join(t))
-                re.see(str(self.lastlno)+":0")
+                re.see(str(self.lastlno+1)+".0")
             else:
                 self.addTab(obj+':'+verb,"\n".join(t),1)
                 self.selectError(obj,verb,self.lastlno)

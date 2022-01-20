@@ -32,6 +32,10 @@ Command History is supported using the up and down arrow keys
 * Automated tests
 
 == Release History ==
+0.2.0 - Fighting with packaging tools
+
+0.1.9 - Type definition fix for older pythons and include icon in package.
+
 0.1.5 - Added icon, tidied up Verb window sizing and include docstring in verb window.
 
 0.1.4 - Get Verb and Verbs window working.

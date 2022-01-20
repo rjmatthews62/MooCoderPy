@@ -136,7 +136,11 @@ if not("__VERSION+__" in globals()):
 
 print("MooCoderPy",__VERSION__)
 root = Tk()
-root.iconbitmap(SCRIPT_DIR+"/moocoder.ico")
+try:
+    root.iconbitmap(SCRIPT_DIR+"/moocoder.ico")
+except:
+    print("Couldn't find icon file")
+
 myfont=font.Font(name="Arial",size=10)
 root.option_add( "*font", myfont)
 root.title("MooCoderPy "+__VERSION__)
