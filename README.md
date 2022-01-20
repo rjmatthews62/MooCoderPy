@@ -32,6 +32,8 @@ Command History is supported using the up and down arrow keys
 * Automated tests
 
 == Release History ==
+0.2.1 - Sorting out window icon on linux
+
 0.2.0 - Fighting with packaging tools
 
 0.1.9 - Type definition fix for older pythons and include icon in package.

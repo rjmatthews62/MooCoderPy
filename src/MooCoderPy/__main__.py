@@ -139,7 +139,9 @@ root = Tk()
 try:
     root.iconbitmap(SCRIPT_DIR+"/moocoder.ico")
 except:
-    print("Couldn't find icon file")
+    print("Couldn't find icon file. Trying png")
+    ico=PhotoImage(file=SCRIPT_DIR+"/moocoder.png")
+    root.iconphoto(False,ico)
 
 myfont=font.Font(name="Arial",size=10)
 root.option_add( "*font", myfont)
