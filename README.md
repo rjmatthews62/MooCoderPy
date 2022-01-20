@@ -32,6 +32,8 @@ Command History is supported using the up and down arrow keys
 * Automated tests
 
 == Release History ==
+0.1.5 - Added icon, tidied up Verb window sizing and include docstring in verb window.
+
 0.1.4 - Get Verb and Verbs window working.
 
 0.1.3 - Edit Verb (Edit->New Tab)
