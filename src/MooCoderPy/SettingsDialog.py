@@ -40,6 +40,8 @@ def getConfig():
         inifile.add_section("settings")
     if inifile.has_section("DEFAULT"):
         inifile.remove_section("DEFAULT")
+    if not inifile.has_section("test"):
+        inifile.add_section("test")
     return inifile
 
 def saveConfig(inifile):

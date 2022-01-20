@@ -5,6 +5,7 @@ from tkinter import *
 from tkinter import messagebox,font
 import socket, threading,select
 import SettingsDialog
+from codetext import *
 from wgplib import *
 
 
@@ -21,6 +22,7 @@ class TerminalWindow(ScrollText):
     lvVerbs:ttk.Treeview=None
     dumpobject:str=""
     normalfont:font.Font=None
+    testtab:str=""
 
     ColorTable = (
         "#000000",
@@ -544,7 +546,7 @@ class TerminalWindow(ScrollText):
         tabs=self.pages.tabs()
         for i in range(2,len(tabs)):
             w=self.pages.nametowidget(tabs[i])
-            if (type(w) is ScrollText):
+            if (isinstance(w,ScrollText)):
                 re:Text=w.textbox
                 lines=re.get("1.0","end").splitlines()
                 if (len(lines)>0 and (lines[0]+" ").lower().find(obj+':'+verb+' ')>=0):
@@ -577,7 +579,7 @@ class TerminalWindow(ScrollText):
         searchverb=getsepfield(verb,0,'*') # Handle wildcards.
         for i in self.pages.tabs():
             w=self.pages.nametowidget(i)
-            if (type(w) is ScrollText):
+            if isinstance(w,ScrollText):
                 re:ScrollText=w
                 if (re.tabtype!=1):
                     continue
@@ -591,14 +593,20 @@ class TerminalWindow(ScrollText):
 
     def currentEditor(self)->Text:
         w=self.currentPage()
-        if (type(w) is ScrollText):
+        if isinstance(w,ScrollText):
             return w.textbox
         return None
 
     def currentPage(self)->ScrollText:
         w=self.nametowidget(self.pages.select())
-        if (type(w) is ScrollText):
+        if isinstance(w,ScrollText):
             return w
+        return None
+    
+    def currentTest(self)->Entry:
+        w=self.currentPage()
+        if isinstance(w,CodeText):
+            return w.test
         return None
 
     def addtarget(self,dest:Text, line:str):
@@ -652,30 +660,30 @@ class TerminalWindow(ScrollText):
             re.see(ix)
             re.tag_add(SEL,ix,str(lno+1)+".end")
             re.focus_set()
-#            adddebug('Error found: '+line);
         elif line=='Verb not programmed.':
             self.onExamineLine=self.doCheckTest
         elif line=='Verb programmed.':
-#            adddebug('Compiled OK.');
             self.onExamineLine=self.doCheckTest
-            if False:
-#            SetChanged(CurrentEditor,false);
-#            e:=CurrentTest;
-#            if assigned(e) and (trim(e.Text)<>'') then
-#            begin
-#            msgqueue.add(e.Text);
-#            testtab:=pages.ActivePage;
-#            onExamineLine:=DoChecktest;
+            e=self.currentTest()
+            if e and (e.get()!=""):
+                self.sendCmd(e.get())
+                self.testtab=self.pages.select()
                 self.getstack=False
+                ifile=SettingsDialog.getConfig()
+                ifile["test"][self.currentPage().testName()]=e.get()
+                SettingsDialog.saveConfig(ifile)
                 self.pages.select(self)
             else:
                  self.showmessage(line)
 
     def addTab(self,caption:str,text:str,tabtype:int):
-        t=ScrollText(self.pages,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+        t=CodeText(self.pages,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
         self.pages.add(t,text=caption)
         t.textbox.insert("1.0",text)
+        t.caption=caption
         t.tabtype=tabtype
+        ifile=SettingsDialog.getConfig()
+        t.testvar.set(ifile["test"].get(t.testName(),""))
 
     def doCheckVerb(self, line:str):
         if (line=='***finished***'):
@@ -803,7 +811,7 @@ class TerminalWindow(ScrollText):
         return True
     
     def docompile(self,page:ScrollText):
-        if not(type(page) is ScrollText):
+        if not(isinstance(page, ScrollText)):
             return
         self.sendCmd(page.textbox.get("1.0","end"))
         self.onExamineLine=self.doCheckCompile
