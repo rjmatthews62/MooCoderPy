@@ -1,7 +1,7 @@
 # MooCoderPy
 Python/Tkinter version of Moocoder
 
-Very much a work in progress, but it currently works as a simple Moo client.
+Still a bit rough around the edges, but actually functional as a Moo Coding tool
 
 Can be installed via pip:
 * pip install moocoderpy-rjmatthews62
