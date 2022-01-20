@@ -48,7 +48,10 @@ class ScrollText(tk.Text):
         time.sleep(2)
         self.sendtext("This should appear after 5 seconds\nAnd this is a second line.")
         print("Thread done.")
-
+    
+    def lines(self):
+        """Return text as a list of strings"""
+        return self.textbox.get("1.0","end").split("\n")
 
 if __name__ == "__main__":
     root=tk.Tk()

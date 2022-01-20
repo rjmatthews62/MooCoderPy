@@ -3,6 +3,7 @@
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk 
+from tkinter import font
 from tkinter import scrolledtext
 from tkinter import simpledialog
 import os,sys
@@ -135,7 +136,9 @@ if not("__VERSION+__" in globals()):
 
 print("MooCoderPy",__VERSION__)
 root = Tk()
-
+root.iconbitmap(SCRIPT_DIR+"/moocoder.ico")
+myfont=font.Font(name="Arial",size=10)
+root.option_add( "*font", myfont)
 root.title("MooCoderPy "+__VERSION__)
 root.protocol("WM_DELETE_WINDOW",doClose)
 stack=Text(root,width=50)
@@ -144,6 +147,7 @@ mainpack(False)
 
 ff=Frame(nb)
 tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+tw.normalfont=myfont
 tw.setstackvisible=mainpack
 tw.stack=stack
 nb.add(tw,text="Terminal")
@@ -161,10 +165,14 @@ verblist.heading("c2",text="Verb")
 verblist.heading("c3",text="Args")
 verblist.heading("c4",text="Detail")
 verblist.column("#0",stretch=False,width=50)
-for i in range(2):
+for i in range(3):
     verblist.column(i,stretch=False,width=80)
 verblist.pack(fill=BOTH, expand=True)
 verblist.bind("<Double-Button-1>",doVerbDblClick)
+verblist.style=ttk.Style(verblist)
+verblist.style.configure("Treeview",font=myfont)
+verblist.style.configure("Treeview.Heading",font=myfont)
+print(verblist.style)
 nb.enable_traversal()
 tw.capturefunc=handlecapture
 tw.lvVerbs=verblist

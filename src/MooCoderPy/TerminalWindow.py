@@ -2,7 +2,7 @@ from tkinter import simpledialog
 from tkinter.ttk import Notebook
 from ScrollText import *
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox,font
 import socket, threading,select
 import SettingsDialog
 from wgplib import *
@@ -20,6 +20,7 @@ class TerminalWindow(ScrollText):
     lastobj:str=""
     lvVerbs:ttk.Treeview=None
     dumpobject:str=""
+    normalfont:font.Font=None
 
     ColorTable = (
         "#000000",
@@ -557,6 +558,37 @@ class TerminalWindow(ScrollText):
                     return True
         return False
     
+    def findVerbHelp(self,obj:str,verb:str)->str:
+        """Extract help line from verb"""
+        re=self.findVerbEditor(obj,verb)
+        result='No Help'
+        if not(re):
+            return result
+        lines=re.lines()
+        if len(lines)>=2:
+            s=lines[1]
+            if (s.startswith('"')):
+                s=s[1:]
+                s=s[0:len(s)-2]
+                result=s
+        return result
+
+    def findVerbEditor(self,obj:str, verb:str)->ScrollText | None:
+        searchverb=getsepfield(verb,0,'*') # Handle wildcards.
+        for i in self.pages.tabs():
+            w=self.pages.nametowidget(i)
+            if (type(w) is ScrollText):
+                re:ScrollText=w
+                if (re.tabtype!=1):
+                    continue
+                s=re.textbox.get("1.0","1.end")
+                ret=self.parseVerb(s)
+                if (ret):
+                    (aobj,averb)=ret
+                    if ansiSameText(aobj,obj) and ansiSameText(averb,searchverb):
+                        return re
+        return None
+
     def currentEditor(self)->Text:
         w=self.currentPage()
         if (type(w) is ScrollText):
@@ -706,9 +738,6 @@ class TerminalWindow(ScrollText):
         self.namelist[self.lastobj]=aname
         self.updateVerbs()
     
-    def findVerbHelp(self,obj:str,verb:str)->str:
-        return ""
-
     def updateVerbs(self)->None:
         """Update Verb list window"""
 #        var nd:TListItem; s:String; obj,verb:String;
@@ -740,8 +769,20 @@ class TerminalWindow(ScrollText):
     def fitListContents(self,alist:ttk.Treeview):
         cols=alist.cget("columns")
         colnames=["#0"]+list(cols)
-        print("cols",cols,colnames)
-        
+        widths=[0 for x in colnames]
+        for i in range(len(colnames)):
+            n=colnames[i]
+            widths[i]=max(widths[i],self.normalfont.measure(alist.heading(n,"text")))
+        for iid in alist.get_children():
+            line=alist.item(iid)
+            widths[0]=max(widths[0],self.normalfont.measure(line["text"]))
+            v=line["values"]
+            for i in range(1,min(len(colnames),len(v)+1)):
+                widths[i]=max(widths[i],self.normalfont.measure(v[i-1]))
+        spacing=self.normalfont.measure("  ")
+        widths[0]+=spacing*2 # Guessing at present: allow space for image
+        for i in range(len(colnames)):
+            alist.column(colnames[i],width=widths[i]+spacing)
 
     def parseExternal(self):
         try:
@@ -878,3 +919,4 @@ class TerminalWindow(ScrollText):
             self.verblist.append(obj+':'+verb);
         self.checkName(obj)
         self.updateVerbs()
+        self.pages.select(self.lvVerbs.winfo_parent())

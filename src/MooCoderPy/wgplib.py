@@ -49,8 +49,12 @@ def atol(s:str)->int:
         result=int(result)
     except:
         result=0
-
     return result
+
+def ansiSameText(s1:str,s2:str)->bool:
+    """Compare two strings case insensitive"""
+    return (s1.lower()==s2.lower())
+
 if __name__=="__main__":
     print(atol("1234x"))
     print(atol("-234 this is a test"))
