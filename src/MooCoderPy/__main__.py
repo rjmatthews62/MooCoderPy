@@ -65,7 +65,6 @@ def doupdate(event=None):
             nb.select(tw)
 
 def doTabChanged(event):
-    print("Tab changed",event)
     tabname=nb.tab("current","text")
     if (tabname=="Terminal"):
         tw.sendEntry.focus()
