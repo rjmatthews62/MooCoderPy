@@ -34,6 +34,8 @@ Ctrl+G will got to a line no in a code window.
 
 == TODO ==
 * Double click on errors
+* Refresh
+* Clear Project
 
 == Release History ==
 
