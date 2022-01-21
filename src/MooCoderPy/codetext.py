@@ -2,6 +2,7 @@ from tkinter import simpledialog
 from ScrollText import *
 from tkinter import *
 from time import *
+from findreplacedialog import *
 
 class CodeText(ScrollText):
     bottom:Frame
@@ -9,6 +10,8 @@ class CodeText(ScrollText):
     caption:str
     testvar:StringVar
     modifying=False
+    lastfind:str=""
+
     KEYWORDLIST=('if','then','else','elseif','for',
            'while','endfor','endwhile','endif',
            'try','except','endtry','break','continue')
@@ -35,6 +38,8 @@ class CodeText(ScrollText):
         self.bind_all("<Control-Key-G>",self.gotoLine)
         self.bind_all("<Control-Key-g>",self.gotoLine)
         self.textbox.bind_all("<<Modified>>",self.modified)
+        self.bind_all("<Control-Key-F>",self.find)
+        self.bind_all("<Control-Key-f>",self.find)
     
     def currentLine(self)->int:
         """Return currently selected line no"""
@@ -57,9 +62,12 @@ class CodeText(ScrollText):
 
     def trackLocation(self,event=None):
         """Update Cursor Location"""
-        (x,y)=self.textbox.index(INSERT).split(".")
+        loc=self.textbox.index(INSERT)
+        (x,y)=loc.split(".")
         s="%4d:%3d" % (int(x)-1,int(y))
         self.posvar.set(s)
+        if (self.lastfind!="" and self.lastfind!=loc):
+            self.textbox.tag_remove("found","1.0",END)
 
     def gotoLine(self,event=None):
         """Ask User to go to line no"""
@@ -71,6 +79,29 @@ class CodeText(ScrollText):
         mark="%d.0"%(lno+1)
         self.textbox.mark_set(INSERT,mark)
         self.textbox.see(mark)
+    
+    def find(self,event=None):
+        """Find text in editor"""
+        FindReplaceDialog(self,"Find...")
+        if findReplaceSettings.go:
+            if findReplaceSettings.backward:
+                ix=self.textbox.index(INSERT)+"-1 chars" 
+                found=self.textbox.search(findReplaceSettings.search, "1.0",ix,backwards=True,nocase=not(findReplaceSettings.caseSensitive))
+                if not(found):
+                    found=self.textbox.search(findReplaceSettings.search, END,ix, backwards=True,nocase=not(findReplaceSettings.caseSensitive))
+            else:            
+                ix=self.textbox.index(INSERT)+"+1 chars" 
+                found=self.textbox.search(findReplaceSettings.search, ix,END,nocase=not(findReplaceSettings.caseSensitive))
+                if not(found):
+                    found=self.textbox.search(findReplaceSettings.search, "1.0",ix,nocase=not(findReplaceSettings.caseSensitive))
+            if found:
+                self.textbox.mark_set(INSERT,found)
+                self.textbox.see(found)
+                self.textbox.focus_set()
+                self.textbox.tag_remove("found","1.0",END)
+                self.textbox.tag_add("found",found,found+"+"+str(len(findReplaceSettings.search))+" chars")
+                self.textbox.tag_configure("found",background="blue",foreground="white")
+                self.lastfind=found
 
     def testName(self)->str:
         return self.caption.lower().replace("*","").replace("=","_").replace("#","").replace(":","_")

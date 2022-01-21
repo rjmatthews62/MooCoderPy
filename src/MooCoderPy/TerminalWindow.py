@@ -929,3 +929,5 @@ class TerminalWindow(ScrollText):
         self.checkName(obj)
         self.updateVerbs()
         self.pages.select(self.lvVerbs.winfo_parent())
+    
+    
