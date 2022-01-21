@@ -1,4 +1,4 @@
-from tkinter import simpledialog
+from tkinter import messagebox, simpledialog
 from ScrollText import *
 from tkinter import *
 from time import *
@@ -84,9 +84,12 @@ class CodeText(ScrollText):
         """Find text in editor"""
         FindReplaceDialog(self,"Find...")
         if findReplaceSettings.go:
+            if findReplaceSettings.isreplace:
+                messagebox.showwarning("Replace","Replace not implemented yet.")
+                return
             if findReplaceSettings.backward:
-                ix=self.textbox.index(INSERT)+"-1 chars" 
-                found=self.textbox.search(findReplaceSettings.search, "1.0",ix,backwards=True,nocase=not(findReplaceSettings.caseSensitive))
+                ix=self.textbox.index(INSERT+" -1 chars") 
+                found=self.textbox.search(findReplaceSettings.search, ix,"1.0",backwards=True,nocase=not(findReplaceSettings.caseSensitive))
                 if not(found):
                     found=self.textbox.search(findReplaceSettings.search, END,ix, backwards=True,nocase=not(findReplaceSettings.caseSensitive))
             else:            
@@ -102,6 +105,8 @@ class CodeText(ScrollText):
                 self.textbox.tag_add("found",found,found+"+"+str(len(findReplaceSettings.search))+" chars")
                 self.textbox.tag_configure("found",background="blue",foreground="white")
                 self.lastfind=found
+            else:
+                messagebox.showwarning("Search",findReplaceSettings.search+" not found.")
 
     def testName(self)->str:
         return self.caption.lower().replace("*","").replace("=","_").replace("#","").replace(":","_")

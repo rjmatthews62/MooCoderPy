@@ -9,6 +9,7 @@ class FindReplaceSettings:
     caseSensitive:bool=False
     backward:bool=False
     go:bool=False
+    isreplace:bool=False
 
 findReplaceSettings=FindReplaceSettings() # Global holder for settings.
 
@@ -17,7 +18,6 @@ class FindReplaceDialog(tkinter.simpledialog.Dialog):
     replacevar:StringVar
     casevar:IntVar
     backvar:IntVar
-    
 
     def body(self, master):
         f=("Arial",12)
@@ -34,7 +34,8 @@ class FindReplaceDialog(tkinter.simpledialog.Dialog):
         chk.grid(row=2,column=1,sticky=W)
         self.backvar=IntVar(value=int(findReplaceSettings.backward))
         Checkbutton(master,text="Backwards",variable=self.backvar).grid(row=3,column=1,sticky=W)
-        FindReplaceDialog.go=False
+        findReplaceSettings.go=False
+        findReplaceSettings.isreplace=False
         return self.search # initial focus
 
     def apply(self):
@@ -44,6 +45,30 @@ class FindReplaceDialog(tkinter.simpledialog.Dialog):
         findReplaceSettings.backward=bool(self.backvar.get())
         findReplaceSettings.go=True
         
+    def doReplace(self):
+        findReplaceSettings.isreplace=True
+        self.ok()
+
+    def buttonbox(self):
+        '''add standard button box.
+
+        override if you do not want the standard buttons
+        '''
+    # Copied base buttons from ancestor. Coulnd find a logical way to inherit.
+        box = Frame(self)
+
+        w = Button(box, text="OK", width=10, command=self.ok, default=ACTIVE)
+        w.pack(side=LEFT, padx=5, pady=5)
+        w = Button(box, text="Cancel", width=10, command=self.cancel)
+        w.pack(side=LEFT, padx=5, pady=5)
+        w = Button(box,text="Replace", width=10,command=self.doReplace)
+        w.pack(side=LEFT, padx=5,pady=5)
+
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
+
+        box.pack()
+
 
 if __name__=="__main__":
     root=Tk()
@@ -54,4 +79,5 @@ if __name__=="__main__":
     print(findReplaceSettings.caseSensitive)
     print(findReplaceSettings.backward)
     print(findReplaceSettings.go)
+    print(findReplaceSettings.isreplace)
 
