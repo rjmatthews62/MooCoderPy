@@ -24,15 +24,21 @@ Project->Get Verbs - Load all the verbs for an object into the verbs window.
 
 Basic error checking and stack trace implemented.
 
+Syntax Highlighting implemented.
+
 Command History is supported using the up and down arrow keys
 
 Each code window has an optional single-line test command which will run on successful compile (F5)
 
+Ctrl+G will got to a line no in a code window.
+
 == TODO ==
-* Syntax highlighting
 * Double click on errors
 
 == Release History ==
+
+0.2.3 - Added Syntax highlighting, Goto Line, Cursor Location
+
 0.2.2 - Added Auto-test functionality
 
 0.2.1 - Sorting out window icon on linux

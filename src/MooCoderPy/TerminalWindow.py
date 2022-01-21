@@ -684,6 +684,7 @@ class TerminalWindow(ScrollText):
         t.tabtype=tabtype
         ifile=SettingsDialog.getConfig()
         t.testvar.set(ifile["test"].get(t.testName(),""))
+        t.highlight()
 
     def doCheckVerb(self, line:str):
         if (line=='***finished***'):
