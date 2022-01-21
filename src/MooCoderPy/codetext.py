@@ -119,7 +119,8 @@ class CodeText(ScrollText):
         
         if (lno>=self.lastLine()) or (lno<1):
               return
-        self.cleartags(lno)              
+        self.cleartags(lno)
+        if lno==0: return # Leave programming line alone.
         line=self.getLine(lno)
 
         isquote=False
@@ -165,6 +166,7 @@ class CodeText(ScrollText):
         fromix="%d.%d" % (lno,start)
         toix="%d.%d" % (lno,end)
         self.textbox.tag_add(color,fromix,toix)
+
 if __name__=="__main__":
     root=Tk()
     c=CodeText(root,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")

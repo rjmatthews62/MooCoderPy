@@ -36,6 +36,8 @@ Ctrl+G will got to a line no in a code window.
 * Double click on errors
 * Refresh
 * Clear Project
+* Find and Replace
+* Bracket Matching
 
 == Release History ==
 
