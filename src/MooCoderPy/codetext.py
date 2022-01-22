@@ -11,6 +11,8 @@ class CodeText(ScrollText):
     testvar:StringVar
     modifying=False
     lastfind:str=""
+    popup:Menu
+    tw:None #Terminal window.
 
     KEYWORDLIST=('if','then','else','elseif','for',
            'while','endfor','endwhile','endif',
@@ -40,7 +42,40 @@ class CodeText(ScrollText):
         self.textbox.bind_all("<<Modified>>",self.modified)
         self.bind_all("<Control-Key-F>",self.find)
         self.bind_all("<Control-Key-f>",self.find)
+        self.bind_all("<Control-Key-R>",self.refresh)
+        self.bind_all("<Control-Key-r>",self.refresh)
+        self.bind_all("<F3>",self.findAgain)
+        self.buildPopup()
+        self.textbox.bind("<Button-3>",self.doPopup)
     
+    def buildPopup(self):
+        """Make the Popup menu"""
+        p=Menu(self,tearoff=0,font="Arial 12")
+        p.add_command(label="Goto Line Ctrl+G",command=self.gotoLine,underline=0)
+        p.add_command(label="Find Ctrl+F",command=self.find,underline=0)
+        p.add_command(label="Find Again F3",command=self.findAgain,underline=6)
+        p.add_command(label="Refresh Ctrl+R",command=self.refresh,underline=0)
+        p.add_command(label="Redo Syntax",command=self.highlight,underline=10)
+        p.add_command(label="Close",command=self.close,underline=0)
+        self.popup=p
+
+    def close(self):
+        """Close this window"""
+        self.destroy()
+        
+    def doPopup(self,event:Event):
+        """Do the actual popup"""
+        try:
+            self.popup.post(event.x_root,event.y_root)
+        finally:
+            self.popup.grab_release()
+    
+    def refresh(self,event=None):
+        """Refresh from server"""
+        if not self.tw:
+            messagebox.showwarning("MooCoderPy","No Connection to Server")
+        self.tw.doRefresh(self.caption)
+
     def currentLine(self)->int:
         """Return currently selected line no"""
         return int(self.textbox.index(INSERT).split(".")[0])
@@ -84,29 +119,42 @@ class CodeText(ScrollText):
         """Find text in editor"""
         FindReplaceDialog(self,"Find...")
         if findReplaceSettings.go:
-            if findReplaceSettings.isreplace:
-                messagebox.showwarning("Replace","Replace not implemented yet.")
-                return
-            if findReplaceSettings.backward:
-                ix=self.textbox.index(INSERT+" -1 chars") 
-                found=self.textbox.search(findReplaceSettings.search, ix,"1.0",backwards=True,nocase=not(findReplaceSettings.caseSensitive))
-                if not(found):
-                    found=self.textbox.search(findReplaceSettings.search, END,ix, backwards=True,nocase=not(findReplaceSettings.caseSensitive))
-            else:            
-                ix=self.textbox.index(INSERT)+"+1 chars" 
-                found=self.textbox.search(findReplaceSettings.search, ix,END,nocase=not(findReplaceSettings.caseSensitive))
-                if not(found):
-                    found=self.textbox.search(findReplaceSettings.search, "1.0",ix,nocase=not(findReplaceSettings.caseSensitive))
-            if found:
-                self.textbox.mark_set(INSERT,found)
-                self.textbox.see(found)
-                self.textbox.focus_set()
-                self.textbox.tag_remove("found","1.0",END)
-                self.textbox.tag_add("found",found,found+"+"+str(len(findReplaceSettings.search))+" chars")
-                self.textbox.tag_configure("found",background="blue",foreground="white")
-                self.lastfind=found
-            else:
-                messagebox.showwarning("Search",findReplaceSettings.search+" not found.")
+            self.doFind()
+    
+    def findAgain(self,event=None):
+        """Repeat find."""
+        if findReplaceSettings.search=="":
+            self.find()
+        else:
+            findReplaceSettings.go=True
+            findReplaceSettings.isreplace=False
+            self.doFind()
+
+    def doFind(self,event=None):
+        """Perform find command"""
+        if findReplaceSettings.isreplace:
+            messagebox.showwarning("Replace","Replace not implemented yet.")
+            return
+        if findReplaceSettings.backward:
+            ix=self.textbox.index(INSERT+" -1 chars") 
+            found=self.textbox.search(findReplaceSettings.search, ix,"1.0",backwards=True,nocase=not(findReplaceSettings.caseSensitive))
+            if not(found):
+                found=self.textbox.search(findReplaceSettings.search, END,ix, backwards=True,nocase=not(findReplaceSettings.caseSensitive))
+        else:            
+            ix=self.textbox.index(INSERT)+"+1 chars" 
+            found=self.textbox.search(findReplaceSettings.search, ix,END,nocase=not(findReplaceSettings.caseSensitive))
+            if not(found):
+                found=self.textbox.search(findReplaceSettings.search, "1.0",ix,nocase=not(findReplaceSettings.caseSensitive))
+        if found:
+            self.textbox.mark_set(INSERT,found)
+            self.textbox.see(found)
+            self.textbox.focus_set()
+            self.textbox.tag_remove("found","1.0",END)
+            self.textbox.tag_add("found",found,found+"+"+str(len(findReplaceSettings.search))+" chars")
+            self.textbox.tag_configure("found",background="blue",foreground="white")
+            self.lastfind=found
+        else:
+            messagebox.showwarning("Search",findReplaceSettings.search+" not found.")
 
     def testName(self)->str:
         return self.caption.lower().replace("*","").replace("=","_").replace("#","").replace(":","_")

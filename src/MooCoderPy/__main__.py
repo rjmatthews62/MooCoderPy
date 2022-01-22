@@ -57,12 +57,15 @@ def handlecapture(text:str, name:str):
     nb.tab(ff,text=name)
 
 def doupdate(event=None):
+    global ff
     re=tw.currentPage()
-    if (re.tabtype==1):
+    if (re and re.tabtype==1):
         tw.docompile(re)
-    elif re.tagtype==0:
-        if tw.doupdate(memo1.get("1.0","end")):
-            nb.select(tw)
+    else:
+        t=nb.nametowidget(nb.select())
+        if (t==ff):
+            if tw.doupdate(memo1.get("1.0","end")):
+                nb.select(tw)
 
 def doTabChanged(event):
     tabname=nb.tab("current","text")
@@ -95,6 +98,8 @@ def buildMenu():
     projectmenu=Menu(menubar,tearoff=0)
     projectmenu.add_command(label="New Tab Ctrl+N",command=donewtab,underline=0)
     projectmenu.add_command(label="Get Verbs Ctrl+Shift+V",command=tw.getVerbs,underline=0)
+    projectmenu.add_command(label="Clear Project",command=tw.clearProject,underline=0)
+    
     root.bind("<Control-Shift-Key-V>",tw.getVerbs)
     root.bind("<Control-Shift-Key-v>",tw.getVerbs)
     

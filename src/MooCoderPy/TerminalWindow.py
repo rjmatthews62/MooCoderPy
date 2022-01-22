@@ -679,12 +679,21 @@ class TerminalWindow(ScrollText):
     def addTab(self,caption:str,text:str,tabtype:int):
         t=CodeText(self.pages,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
         self.pages.add(t,text=caption)
+        t.tw=self
         t.textbox.insert("1.0",text)
         t.caption=caption
         t.tabtype=tabtype
         ifile=SettingsDialog.getConfig()
         t.testvar.set(ifile["test"].get(t.testName(),""))
         t.highlight()
+    
+    def doRefresh(self,verbstr:str)->None:
+        """Reload a verb"""
+        try:
+            (verb,obj)=self.parseVerb(verbstr)
+            self.fetchVerb(verb,obj)
+        except:
+            pass
 
     def doCheckVerb(self, line:str):
         if (line=='***finished***'):
@@ -712,9 +721,18 @@ class TerminalWindow(ScrollText):
             t[0]='@program '+obj+':'+verb
             if self.selectError(obj,verb,self.lastlno):
                 re=self.currentEditor()
+                lastix=re.index(INSERT)
                 re.delete("1.0","end")
                 re.insert("1.0","\n".join(t))
-                re.see(str(self.lastlno+1)+".0")
+                if (self.lastlno>0):
+                    re.see(str(self.lastlno+1)+".0")
+                else:
+                    re.mark_set(INSERT,lastix)
+                    re.see(lastix)
+                try:
+                    self.currentPage().highlight()
+                except:
+                    pass
             else:
                 self.addTab(obj+':'+verb,"\n".join(t),1)
                 self.selectError(obj,verb,self.lastlno)
@@ -759,6 +777,7 @@ class TerminalWindow(ScrollText):
             oldverb=nd["values"][1].lower()
         for i in self.lvVerbs.get_children(): #Clear list
             self.lvVerbs.delete(i)
+        self.verblist.sort() # Todo... make cleverer.
         for s in self.verblist:
             obj=getsepfield(s,0,':')
             verb=getsepfield(s,1,':')
@@ -862,7 +881,7 @@ class TerminalWindow(ScrollText):
         self.sendCmd('@list '+obj+':'+verb+' without numbers')
         self.sendCmd(';player:tell("***finished***")')
         self.verbcollect=''
-        self.onExamineLine=self.doCheckVerb;
+        self.onExamineLine=self.doCheckVerb
 
     def sendCmd(self,cmd):
         buf=(cmd+"\n").encode("utf-8")
@@ -930,4 +949,17 @@ class TerminalWindow(ScrollText):
         self.updateVerbs()
         self.pages.select(self.lvVerbs.winfo_parent())
     
-    
+    def clearProject(self):
+        """Close all open tabs and clear verb list"""
+        if messagebox.askyesno("MooCoderPy","Clear this project?"):
+            tabs=list(self.pages.tabs())
+            tabs.reverse()
+            for tab in tabs:
+                x=self.pages.nametowidget(tab)
+                if (hasattr(x,"tabtype") and x.tabtype==1):
+                    x.close()
+            self.verblist.clear()
+            self.namelist.clear()
+            self.arglist.clear()
+            self.updateVerbs()
+            self.pages.select(self)

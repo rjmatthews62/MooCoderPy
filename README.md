@@ -21,6 +21,7 @@ Selecting Edit->Send Update (or F5) will issue the correct command to update wha
 Project->New Tab (Ctrl+N) - Loads a verb into its own tab. Press F5 to compile.
 Project->Get Verbs - Load all the verbs for an object into the verbs window.
     You can double click in the Verbs pane to edit that verb.
+Project->Clear Project - Close all code windows and clear verb list
 
 Basic error checking and stack trace implemented.
 
@@ -30,16 +31,23 @@ Command History is supported using the up and down arrow keys
 
 Each code window has an optional single-line test command which will run on successful compile (F5)
 
-Ctrl+G will got to a line no in a code window.
+
+Right-Click in code window will bring up a context menu.
+* Goto Line Ctrl+G will got to a line no in a code window.
+* Find Ctrl+F - find text in current window
+* Find Again F3 - repeat last find
+* Refresh Ctrl+R - Reload page from server
+* Redo Syntax - redo syntax highlighting on page
+* Close - Close current window.
 
 == TODO ==
 * Double click on errors
-* Refresh
-* Clear Project
-* Find and Replace
+* Replace
 * Bracket Matching
 
 == Release History ==
+
+0.2.4 - Edit find, context menu, refresh, close, clear
 
 0.2.3 - Added Syntax highlighting, Goto Line, Cursor Location
 
