@@ -31,6 +31,7 @@ Command History is supported using the up and down arrow keys
 
 Each code window has an optional single-line test command which will run on successful compile (F5)
 
+Bracket Matching implemented
 
 Right-Click in code window will bring up a context menu.
 * Goto Line Ctrl+G will got to a line no in a code window.
@@ -43,9 +44,10 @@ Right-Click in code window will bring up a context menu.
 == TODO ==
 * Double click on errors
 * Replace
-* Bracket Matching
 
 == Release History ==
+
+0.2.6 - Bracket Matching
 
 0.2.5 - removed unwanted checkbox import
 

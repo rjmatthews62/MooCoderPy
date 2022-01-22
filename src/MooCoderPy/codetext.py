@@ -19,6 +19,8 @@ class CodeText(ScrollText):
            'try','except','endtry','break','continue')
     
     COLORLIST=("white","lawn green","cyan","magenta","orange","yellow")
+    OPENBRACKETS=("(","{","[")
+    CLOSEBRACKETS=(")","}","]")
 
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
@@ -62,7 +64,7 @@ class CodeText(ScrollText):
     def close(self):
         """Close this window"""
         self.destroy()
-        
+
     def doPopup(self,event:Event):
         """Do the actual popup"""
         try:
@@ -103,6 +105,43 @@ class CodeText(ScrollText):
         self.posvar.set(s)
         if (self.lastfind!="" and self.lastfind!=loc):
             self.textbox.tag_remove("found","1.0",END)
+        self.bracketMatching()
+    
+    def bracketMatching(self):
+        """Match bracket types"""
+        ix=self.textbox.index(INSERT)
+        c=self.textbox.get(ix)
+        self.textbox.tag_remove("bracket","1.0",END)
+        if c in self.OPENBRACKETS:
+            text=self.textbox.get(ix,END)
+            bracketlen=self.bracketMatch(c,text,True)
+            if bracketlen>0:
+                self.textbox.tag_add("bracket",ix,("%s +%d chars" % (ix,bracketlen)))
+        elif c in self.CLOSEBRACKETS:
+            text=self.textbox.get("1.0",ix+" +1 chars")
+            bracketlen=self.bracketMatch(c,text,False)
+            if bracketlen>0:
+                self.textbox.tag_add("bracket","%s -%d chars" % (ix,bracketlen-1),ix+" +1 chars")
+
+    
+    def bracketMatch(self,bracket:str,text:str, forwards:bool)->int:
+        """Routine to actually track the brackets. Returns the number of characters, 0 if not found. """
+        if forwards:
+            close=self.CLOSEBRACKETS[self.OPENBRACKETS.index(bracket)]
+        else:
+            close=self.OPENBRACKETS[self.CLOSEBRACKETS.index(bracket)]
+            text=text[::-1] # Reverse
+        result=0
+        match=0
+        for xx in text:
+            result+=1
+            if (xx==bracket):
+                match+=1
+            elif (xx==close):
+                match-=1
+                if (match<=0):
+                    return result
+        return 0
 
     def gotoLine(self,event=None):
         """Ask User to go to line no"""
@@ -163,6 +202,7 @@ class CodeText(ScrollText):
         """Initialize colour tags"""
         for col in self.COLORLIST:
             self.textbox.tag_configure(col,foreground=col)
+        self.textbox.tag_configure("bracket",foreground="white",background="red")
 
     def lastLine(self)->int:
         """Highest line no of edit"""
