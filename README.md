@@ -47,6 +47,8 @@ Right-Click in code window will bring up a context menu.
 
 == Release History ==
 
+0.2.5 - removed unwanted checkbox import
+
 0.2.4 - Edit find, context menu, refresh, close, clear
 
 0.2.3 - Added Syntax highlighting, Goto Line, Cursor Location
