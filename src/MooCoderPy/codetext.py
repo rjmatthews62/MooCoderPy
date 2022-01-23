@@ -3,6 +3,7 @@ from ScrollText import *
 from tkinter import *
 from time import *
 from findreplacedialog import *
+import re
 
 class CodeText(ScrollText):
     bottom:Frame
@@ -12,7 +13,7 @@ class CodeText(ScrollText):
     modifying=False
     lastfind:str=""
     popup:Menu
-    tw:None #Terminal window.
+    tw=None #Terminal window.
 
     KEYWORDLIST=('if','then','else','elseif','for',
            'while','endfor','endwhile','endif',
@@ -76,6 +77,7 @@ class CodeText(ScrollText):
         """Refresh from server"""
         if not self.tw:
             messagebox.showwarning("MooCoderPy","No Connection to Server")
+            return
         self.tw.doRefresh(self.caption)
 
     def currentLine(self)->int:
@@ -174,16 +176,23 @@ class CodeText(ScrollText):
         if findReplaceSettings.isreplace:
             messagebox.showwarning("Replace","Replace not implemented yet.")
             return
+        search=findReplaceSettings.search
+        options={"backwards":findReplaceSettings.backward}
+        options["nocase"]=not findReplaceSettings.caseSensitive
+        if findReplaceSettings.wordmatch:
+            options["regexp"]=True
+            search=r"\y"+(re.sub(r"([\\^.?*<>\[\]$])",r"\\\1",search))+r"\y"
+
         if findReplaceSettings.backward:
             ix=self.textbox.index(INSERT+" -1 chars") 
-            found=self.textbox.search(findReplaceSettings.search, ix,"1.0",backwards=True,nocase=not(findReplaceSettings.caseSensitive))
+            found=self.textbox.search(search, ix,"1.0",**options)
             if not(found):
-                found=self.textbox.search(findReplaceSettings.search, END,ix, backwards=True,nocase=not(findReplaceSettings.caseSensitive))
+                found=self.textbox.search(search, END,ix,**options)
         else:            
             ix=self.textbox.index(INSERT)+"+1 chars" 
-            found=self.textbox.search(findReplaceSettings.search, ix,END,nocase=not(findReplaceSettings.caseSensitive))
+            found=self.textbox.search(search, ix,END,**options)
             if not(found):
-                found=self.textbox.search(findReplaceSettings.search, "1.0",ix,nocase=not(findReplaceSettings.caseSensitive))
+                found=self.textbox.search(search, "1.0",ix,**options)
         if found:
             self.textbox.mark_set(INSERT,found)
             self.textbox.see(found)
@@ -293,6 +302,7 @@ class CodeText(ScrollText):
 
 if __name__=="__main__":
     root=Tk()
+    root.title("Test Code Editor")
     c=CodeText(root,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
     c.pack(fill=BOTH,expand=True)
     with open("c:/kev/test.moo","r") as f:

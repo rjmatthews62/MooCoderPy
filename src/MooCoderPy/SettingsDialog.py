@@ -31,7 +31,7 @@ class SettingsDialog(tkinter.simpledialog.Dialog):
         saveConfig(self.inifile)
 
 def getConfigFile():
-    return os.path.expanduser("~/moocooderpy.ini")
+    return os.path.expanduser("~/moocoderpy.ini")
 
 def getConfig():
     inifile=configparser.ConfigParser()
