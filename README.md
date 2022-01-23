@@ -47,6 +47,8 @@ Right-Click in code window will bring up a context menu.
 
 == Release History ==
 
+ 0.2.7 - Additional icon error checking.,
+
 0.2.6 - Bracket Matching
 
 0.2.5 - removed unwanted checkbox import
