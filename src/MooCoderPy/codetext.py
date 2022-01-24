@@ -52,7 +52,7 @@ class CodeText(ScrollText):
         self.buildPopup()
         self.textbox.bind("<Button-3>",self.doPopup)
         self.textbox.bind("<Button-2>",self.doPopup) # For Mac, in theory.
-        self.textbox.configure(undo=True)
+        self.textbox.configure(undo=True,exportselection=False,inactiveselectbackground=self.textbox["selectbackground"])
     
     def buildPopup(self):
         """Make the Popup menu"""
