@@ -194,7 +194,7 @@ nb.select(tw)
 tw.pages=nb
 buildMenu()
 loadSettings()
-# Code to add widgets will go here...
+root.state("zoomed")
 root.mainloop()
 print("Done")
 

@@ -905,12 +905,18 @@ class TerminalWindow(ScrollText):
     def doListen(self):
         try:
             while True:
-                (readlist,writelist,exceptlist)=select.select([self.socket],[],[],1) 
+                (readlist,writelist,exceptlist)=select.select([self.socket],[],[self.socket],1) 
                 if self.stopping:
                     print("Listen thread stopping.")
                     break
+                if self.socket in exceptlist:
+                    print("Exception found.")
+                    break
                 if self.socket in readlist:
-                    b = self.socket.recv(128)
+                    b = self.socket.recv(2048)
+                    if len(b)==0: # Socket probably closed.
+                        self.sendtext("\nDisconnected\n")
+                        break
                     self.sendtext(b.decode("utf-8"))
         except Exception as err:
             print("Connection error: {0}".format(err))
@@ -918,6 +924,9 @@ class TerminalWindow(ScrollText):
                 self.sendtext("Connection error: {0}".format(err))
             except:
                 pass
+        print("Listen thread done.")
+        self.listenthread=None
+
     def getVerbs(self,event:Event=None):
         s=simpledialog.askstring('Verbs','Load Verb list for object:', initialvalue=self.dumpobject)
         if (s):

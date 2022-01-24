@@ -48,6 +48,9 @@ Right-Click in code window will bring up a context menu.
 * Double click on errors
 
 == Release History ==
+
+0.3.0 - Fixed disconnect handling issue, set default window state to maximized.
+
 0.2.9 - Tweaked selection handling.
 
 0.2.8 - Replace working, Undo and Redo implemented
