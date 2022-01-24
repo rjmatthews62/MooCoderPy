@@ -680,12 +680,11 @@ class TerminalWindow(ScrollText):
         t=CodeText(self.pages,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
         self.pages.add(t,text=caption)
         t.tw=self
-        t.textbox.insert("1.0",text)
+        t.setText(text)
         t.caption=caption
         t.tabtype=tabtype
         ifile=SettingsDialog.getConfig()
         t.testvar.set(ifile["test"].get(t.testName(),""))
-        t.highlight()
     
     def doRefresh(self,verbstr:str)->None:
         """Reload a verb"""

@@ -37,17 +37,21 @@ Right-Click in code window will bring up a context menu.
 * Goto Line Ctrl+G will got to a line no in a code window.
 * Find Ctrl+F - find text in current window
 * Find Again F3 - repeat last find
+* Replace Ctrl+H - search and replace text
 * Refresh Ctrl+R - Reload page from server
 * Redo Syntax - redo syntax highlighting on page
 * Close - Close current window.
+* Undo - Ctrl+Z - undo last changes
+* Redo - Shift+Ctrl+Z - redo last changes
 
 == TODO ==
 * Double click on errors
-* Replace
 
 == Release History ==
 
- 0.2.7 - Additional icon error checking.,
+0.2.8 - Replace working, Undo and Redo implemented
+
+0.2.7 - Additional icon error checking.,
 
 0.2.6 - Bracket Matching
 

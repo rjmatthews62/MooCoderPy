@@ -1,3 +1,4 @@
+from cgitb import text
 from tkinter import messagebox, simpledialog
 from ScrollText import *
 from tkinter import *
@@ -50,6 +51,8 @@ class CodeText(ScrollText):
         self.bind_all("<F3>",self.findAgain)
         self.buildPopup()
         self.textbox.bind("<Button-3>",self.doPopup)
+        self.textbox.bind("<Button-2>",self.doPopup) # For Mac, in theory.
+        self.textbox.configure(undo=True)
     
     def buildPopup(self):
         """Make the Popup menu"""
@@ -57,7 +60,16 @@ class CodeText(ScrollText):
         p.add_command(label="Goto Line Ctrl+G",command=self.gotoLine,underline=0)
         p.add_command(label="Find Ctrl+F",command=self.find,underline=0)
         p.add_command(label="Find Again F3",command=self.findAgain,underline=6)
+        p.add_command(label="Replace Ctrl+H",command=self.doReplace, underline=1)
+        self.textbox.bind("<Control-H>",self.doReplace)
+        self.textbox.bind("<Control-h>",self.doReplace)
         p.add_command(label="Refresh Ctrl+R",command=self.refresh,underline=0)
+        p.add_command(label="Undo Last Edit Ctrl+Z",command=self.undo)
+        self.textbox.bind("<Control-z>",self.undo)
+        self.textbox.bind("<Control-Z>",self.undo)
+        p.add_command(label="Redo Last Edit Shift+Ctrl+Z",command=self.redo)
+        self.textbox.bind("<Shift-Control-z>",self.redo)
+        self.textbox.bind("<Shift-Control-Z>",self.redo)
         p.add_command(label="Redo Syntax",command=self.highlight,underline=10)
         p.add_command(label="Close",command=self.close,underline=0)
         self.popup=p
@@ -65,6 +77,25 @@ class CodeText(ScrollText):
     def close(self):
         """Close this window"""
         self.destroy()
+
+    def undo(self,event:Event=None):
+        try:
+            self.textbox.edit_undo()
+        except:
+            pass
+
+    def redo(self,event:Event=None):
+        try:
+            self.textbox.edit_redo()
+        except:
+            pass
+
+    def setText(self,text):
+        """Populate text. Does highlighting etc"""
+        self.textbox.delete("1.0",END)
+        self.textbox.insert("1.0",text)
+        self.textbox.edit_reset()
+        self.highlight()
 
     def doPopup(self,event:Event):
         """Do the actual popup"""
@@ -158,7 +189,9 @@ class CodeText(ScrollText):
     
     def find(self,event=None):
         """Find text in editor"""
+        findReplaceSettings.isreplace=False
         FindReplaceDialog(self,"Find...")
+        self.textbox.focus_set()
         if findReplaceSettings.go:
             self.doFind()
     
@@ -168,14 +201,23 @@ class CodeText(ScrollText):
             self.find()
         else:
             findReplaceSettings.go=True
-            findReplaceSettings.isreplace=False
             self.doFind()
+
+    def doReplace(self,event:Event=None):
+        findReplaceSettings.isreplace=True
+        try:
+            selected=self.textbox.index(SEL_FIRST)
+        except:
+            selected=False
+        findReplaceSettings.selection=bool(selected)
+        FindReplaceDialog(self,"Replace...")
+        if findReplaceSettings.go:
+            self.doFind()
+        self.textbox.focus_set()
+        return "break"
 
     def doFind(self,event=None):
         """Perform find command"""
-        if findReplaceSettings.isreplace:
-            messagebox.showwarning("Replace","Replace not implemented yet.")
-            return
         search=findReplaceSettings.search
         options={"backwards":findReplaceSettings.backward}
         options["nocase"]=not findReplaceSettings.caseSensitive
@@ -183,26 +225,50 @@ class CodeText(ScrollText):
             options["regexp"]=True
             search=r"\y"+(re.sub(r"([\\^.?*<>\[\]$])",r"\\\1",search))+r"\y"
 
-        if findReplaceSettings.backward:
-            ix=self.textbox.index(INSERT+" -1 chars") 
-            found=self.textbox.search(search, ix,"1.0",**options)
-            if not(found):
-                found=self.textbox.search(search, END,ix,**options)
-        else:            
-            ix=self.textbox.index(INSERT)+"+1 chars" 
-            found=self.textbox.search(search, ix,END,**options)
-            if not(found):
-                found=self.textbox.search(search, "1.0",ix,**options)
-        if found:
-            self.textbox.mark_set(INSERT,found)
-            self.textbox.see(found)
-            self.textbox.focus_set()
-            self.textbox.tag_remove("found","1.0",END)
-            self.textbox.tag_add("found",found,found+"+"+str(len(findReplaceSettings.search))+" chars")
-            self.textbox.tag_configure("found",background="blue",foreground="white")
-            self.lastfind=found
-        else:
-            messagebox.showwarning("Search",findReplaceSettings.search+" not found.")
+        replaceall=findReplaceSettings.all and findReplaceSettings.isreplace
+        if replaceall:
+            if findReplaceSettings.selection:
+                start=SEL_FIRST
+                end=SEL_LAST
+            else:
+                start="1.0"
+                end=END
+        foundonce=False
+        while True:
+            if replaceall:
+                found=self.textbox.search(search,start,end,**options)
+            elif findReplaceSettings.backward:
+                ix=self.textbox.index(INSERT+" -1 chars")
+                found=self.textbox.search(search, ix,"1.0",**options)
+                if not(found):
+                    found=self.textbox.search(search, END,ix,**options)
+            else:            
+                ix=self.textbox.index(INSERT)+"+1 chars" 
+                found=self.textbox.search(search, ix,END,**options)
+                if not(found):
+                    found=self.textbox.search(search, "1.0",ix,**options)
+            if found:
+                foundonce=True
+                lx=len(findReplaceSettings.search)
+                if findReplaceSettings.isreplace:
+                    self.textbox.delete(found,found+("+%d chars" % lx))
+                    self.textbox.insert(found,findReplaceSettings.replace)
+                    lx=len(findReplaceSettings.replace)
+                self.textbox.mark_set(INSERT,found)
+                self.textbox.see(found)
+                self.textbox.focus_set()
+                self.textbox.tag_remove("found","1.0",END)
+                self.textbox.tag_add("found",found,found+("+%d chars" % lx))
+                self.textbox.tag_configure("found",background="blue",foreground="white")
+                self.lastfind=found
+                if replaceall:
+                    start="%s +%d chars" % (found,lx)
+                else:
+                    break
+            else:
+                if not(foundonce):
+                    messagebox.showwarning("Search",findReplaceSettings.search+" not found.")
+                break
 
     def testName(self)->str:
         return self.caption.lower().replace("*","").replace("=","_").replace("#","").replace(":","_")
@@ -307,7 +373,6 @@ if __name__=="__main__":
     c.pack(fill=BOTH,expand=True)
     with open("c:/kev/test.moo","r") as f:
         data=f.read();
-        c.textbox.insert("1.0",data)
-    c.highlight()
+        c.setText(data)
     root.mainloop()
 
