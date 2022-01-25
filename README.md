@@ -1,8 +1,15 @@
 # MooCoderPy
 Python/Tkinter version of Moocoder
 
-Still a bit rough around the edges, but actually functional as a Moo Coding tool
+MooCoder is an IDE for programming MOO Code in LambdaMOO or similar servers. It incorporates a built in
+MOO/MUSH client, supports the local edit option, and allows you to load and edit object verbs.
+It supports syntax highlighting, jump to error location, a stack trace window and useful syntax highlighting.
 
+This should run on Python 3.6 (or better) and uses the tkinter with no external dependencies.
+
+The original Delphi implementation can be found at https://github.com/rjmatthews62/MooCoder
+
+== Installation ==
 Can be installed via pip:
 * pip install moocoderpy-rjmatthews62
 * python -m MooCoderPy
