@@ -49,6 +49,8 @@ Right-Click in code window will bring up a context menu.
 
 == Release History ==
 
+0.3.1 - Fixed windows maximized for linux environment
+
 0.3.0 - Fixed disconnect handling issue, set default window state to maximized.
 
 0.2.9 - Tweaked selection handling.

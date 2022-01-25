@@ -197,7 +197,7 @@ loadSettings()
 try:
     root.state("zoomed") # Works in windows (and MacOs?)
 except:
-    root.attributes("-zoomed",True)
+    root.attributes("-zoomed",True) # Works for linux
 
 root.mainloop()
 print("Done")
