@@ -53,6 +53,8 @@ Right-Click in code window will bring up a context menu.
 * **Redo - Shift+Ctrl+Z** - redo last changes
 
 A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
+## TODO ##
+Syntax highlighting in local edit.
 
 ## Release History ##
 0.3.2 - Double-click on error messages or stack to go to source line.
