@@ -18,7 +18,9 @@ from ScrollText import *
 from TerminalWindow import *
 import SettingsDialog
 import configparser
- 
+
+tw:TerminalWindow
+
 def doOpen():
     tf = filedialog.askopenfilename(
         initialdir="C:/td/srtmoo/", 
@@ -27,9 +29,8 @@ def doOpen():
         )
     if tf:
         with open(tf,"r") as f:
-            data=f.read();
-            memo1.delete("1.0",END)
-            memo1.insert("1.0",data)
+            data=f.read()
+            tw.openEdit("Local Edit","",data)
 
 def doClose():
     tw.disconnect()
@@ -50,22 +51,10 @@ def doDisconnect():
 def doSettings():
     SettingsDialog.SettingsDialog(root,title="Server Configuration")
 
-def handlecapture(text:str, name:str):
-    memo1.delete("1.0","end")
-    memo1.insert("1.0",text)
-    nb.select(ff)
-    nb.tab(ff,text=name)
-
 def doupdate(event=None):
-    global ff
     re=tw.currentPage()
-    if (re and re.tabtype==1):
+    if re and re.tabtype in (CodeText.MODE_EDIT,CodeText.MODE_CODE):
         tw.docompile(re)
-    else:
-        t=nb.nametowidget(nb.select())
-        if (t==ff):
-            if tw.doupdate(memo1.get("1.0","end")):
-                nb.select(tw)
 
 def doTabChanged(event):
     tabname=nb.tab("current","text")
@@ -162,16 +151,11 @@ stack.bind("<Double-Button-1>",doStackClick)
 nb=ttk.Notebook(root)
 mainpack(False)
 
-ff=Frame(nb)
 tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
 tw.normalfont=myfont
 tw.setstackvisible=mainpack
 tw.stack=stack
 nb.add(tw,text="Terminal")
-nb.add(ff,text="Edit")
-memo1 = scrolledtext.ScrolledText(ff,insertbackground="white");
-memo1.config({"background":"black","foreground":"white","font":("Courier",12,"bold")})
-memo1.pack(fill=BOTH,expand=True)
 
 verbframe=Frame(nb)
 nb.add(verbframe,text="Verbs")
@@ -191,7 +175,6 @@ verblist.style.configure("Treeview",font=myfont)
 verblist.style.configure("Treeview.Heading",font=myfont)
 print(verblist.style)
 nb.enable_traversal()
-tw.capturefunc=handlecapture
 tw.lvVerbs=verblist
 nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
 nb.select(tw)

@@ -15,6 +15,9 @@ class CodeText(ScrollText):
     lastfind:str=""
     popup:Menu
     tw=None #Terminal window.
+    mode:int=0
+    syntax:bool=True
+    upload:str=""
 
     KEYWORDLIST=('if','then','else','elseif','for',
            'while','endfor','endwhile','endif',
@@ -23,8 +26,10 @@ class CodeText(ScrollText):
     COLORLIST=("white","lawn green","cyan","magenta","orange","yellow")
     OPENBRACKETS=("(","{","[")
     CLOSEBRACKETS=(")","}","]")
+    MODE_CODE = 1
+    MODE_EDIT = 2
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, mode:int, **kwargs):
         super().__init__(parent, **kwargs)
         self.bottom = Frame(self, bg="LightGray")
         self.bottom.pack(side=BOTTOM, fill=X)
@@ -53,7 +58,8 @@ class CodeText(ScrollText):
         self.textbox.bind("<Button-3>",self.doPopup)
         self.textbox.bind("<Button-2>",self.doPopup) # For Mac, in theory.
         self.textbox.configure(undo=True,exportselection=False,inactiveselectbackground=self.textbox["selectbackground"])
-    
+        self.mode=mode
+
     def buildPopup(self):
         """Make the Popup menu"""
         p=Menu(self,tearoff=0,font="Arial 12")
@@ -109,6 +115,8 @@ class CodeText(ScrollText):
         if not self.tw:
             messagebox.showwarning("MooCoderPy","No Connection to Server")
             return
+        if (self.mode!=self.MODE_CODE):
+            messagebox.showerror("MooCoderPy","Local Edit Refresh is not supported.")
         self.tw.doRefresh(self.caption)
 
     def currentLine(self)->int:
@@ -319,7 +327,8 @@ class CodeText(ScrollText):
         if (lno>=self.lastLine()) or (lno<1):
               return
         self.cleartags(lno)
-        if lno==0: return # Leave programming line alone.
+        if not(self.syntax): return
+        if lno==0 and self.mode==self.MODE_CODE: return # Leave programming line alone.
         line=self.getLine(lno)
 
         isquote=False
@@ -369,8 +378,9 @@ class CodeText(ScrollText):
 if __name__=="__main__":
     root=Tk()
     root.title("Test Code Editor")
-    c=CodeText(root,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+    c=CodeText(root,CodeText.MODE_CODE, background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
     c.pack(fill=BOTH,expand=True)
+    c.syntax=True
     with open("c:/kev/test.moo","r") as f:
         data=f.read();
         c.setText(data)

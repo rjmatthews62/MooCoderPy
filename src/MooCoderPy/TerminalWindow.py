@@ -348,11 +348,10 @@ class TerminalWindow(ScrollText):
         self.lastline=""
         self.capturestr=""
         self.capturemode=0
-        self.capturefunc=None
         self.external_edit=""
         self.verbcollect=''
         self.onExamineLine=None
-
+        self.upload=""
         self.historylst=[]
         self.historyidx=0
         ifile=SettingsDialog.getConfig()
@@ -547,7 +546,7 @@ class TerminalWindow(ScrollText):
             if (self.lastline=="."):
                 self.capturemode=0
                 (name,upload)=self.parseExternal()
-                self.capturefunc(self.capturestr,name)
+                self.openEdit(name,upload,self.capturestr)
 
     def selectError(self,obj:str,verb:str,lno:int)->bool:
         tabs=self.pages.tabs()
@@ -684,7 +683,7 @@ class TerminalWindow(ScrollText):
                  self.showmessage(line)
 
     def addTab(self,caption:str,text:str,tabtype:int):
-        t=CodeText(self.pages,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+        t=CodeText(self.pages,tabtype,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
         self.pages.add(t,text=caption)
         t.tw=self
         t.setText(text)
@@ -692,6 +691,7 @@ class TerminalWindow(ScrollText):
         t.tabtype=tabtype
         ifile=SettingsDialog.getConfig()
         t.testvar.set(ifile["test"].get(t.testName(),""))
+        return t
     
     def doRefresh(self,verbstr:str)->None:
         """Reload a verb"""
@@ -740,16 +740,37 @@ class TerminalWindow(ScrollText):
                 except:
                     pass
             else:
-                self.addTab(obj+':'+verb,"\n".join(t),1)
+                self.addTab(obj+':'+verb,"\n".join(t),CodeText.MODE_CODE)
                 self.selectError(obj,verb,self.lastlno)
             self.lastlno=0
             self.checkName(obj)
-            self.arglist[obj+':'+verb]=args
-            self.verblist.append(obj+':'+verb)
+            tag=obj+':'+verb
+            self.arglist[tag]=args
+            if not(tag in self.verblist):
+                self.verblist.append()
             self.updateVerbs()
         else:
             self.verbcollect+=line+"\n"
     
+    def findLocalEdit(self,name:str)->CodeText:
+        """Find the local editor by name"""
+        for tab in self.pages.tabs():
+            w=self.pages.nametowidget(tab)
+            if (isinstance(w,CodeText) and w.mode==CodeText.MODE_EDIT):
+                if (w.caption==name):
+                    return w
+        return None
+
+    def openEdit(self,name:str, upload:str, text:str):
+        """Find and open a tab for a local edit"""
+        re=self.findLocalEdit(name)
+        if not re:
+            re=self.addTab(name,text,CodeText.MODE_EDIT)
+        re.upload=upload
+        re.syntax=(upload.find("@program")>=0)
+        re.highlight()
+        self.pages.select(re)
+        
     def checkName(self,obj:str)->None:
         """Check that we know the name of an object."""
         if not(obj in self.namelist):
@@ -826,21 +847,24 @@ class TerminalWindow(ScrollText):
         except:
             return("","")
     
-    def doupdate(self,text:str):
-        if self.external_edit=="":
+    def doupdate(self,upload,text:str):
+        if upload=="":
             messagebox.showwarning("Send Update","Not in @edit mode")
             return False
-        upload=self.parseExternal()[1]    
         self.sendCmd(upload)
         self.sendCmd(text)
         self.after(500,self.sendtext,"Update complete\n")
+        self.pages.select(self)
         return True
     
     def docompile(self,page:ScrollText):
-        if not(isinstance(page, ScrollText)):
+        if not(isinstance(page, CodeText)):
             return
-        self.sendCmd(page.textbox.get("1.0","end"))
-        self.onExamineLine=self.doCheckCompile
+        if page.mode==CodeText.MODE_EDIT:
+            self.doupdate(page.upload,page.textbox.get("1.0","end"))
+        else:
+            self.sendCmd(page.textbox.get("1.0","end"))
+            self.onExamineLine=self.doCheckCompile
 
     def doSend(self):
         s = self.mytext.get()
