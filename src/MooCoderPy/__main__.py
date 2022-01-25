@@ -194,7 +194,11 @@ nb.select(tw)
 tw.pages=nb
 buildMenu()
 loadSettings()
-root.state("zoomed")
+try:
+    root.state("zoomed") # Works in windows (and MacOs?)
+except:
+    root.attributes("-zoomed",True)
+
 root.mainloop()
 print("Done")
 
