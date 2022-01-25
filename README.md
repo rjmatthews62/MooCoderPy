@@ -2,59 +2,60 @@
 Python/Tkinter version of Moocoder
 
 MooCoder is an IDE for programming MOO Code in LambdaMOO or similar servers. It incorporates a built in
-MOO/MUSH client, supports the local edit option, and allows you to load and edit object verbs.
-It supports syntax highlighting, jump to error location, a stack trace window and useful syntax highlighting.
+MOO/MUSH client, supports the local edit option, and allows you to load and edit object verbs in different tabs.
+It supports syntax highlighting, jump to error location and a stack trace window.
 
 This should run on Python 3.6 (or better) and uses the tkinter with no external dependencies.
 
 The original Delphi implementation can be found at https://github.com/rjmatthews62/MooCoder
 
-== Installation ==
+## Installation ##
 Can be installed via pip:
 * pip install moocoderpy-rjmatthews62
 * python -m MooCoderPy
+## Setup ##
+* **Setup -> Server Config** : set server address (and port) 
+* **File -> Connect** - Connect to server
+* **File -> Disconnect** - Disconnect from server
+* **File -> Open** - Open a local file in the editor
 
-Setup -> Server Config : set server address (and port) 
+### External Editor support: ###
 
-File -> Connect - Connect to server
-File -> Disconnect - Disconnect from server
-File -> Open - Open a local file in the editor
+If you set **@edit-option local+** on your MOO server, the **@edit** command will be redirected to MooCoderPy's internal editor.
+Selecting **Edit->Send Update (or F5)** will issue the correct command to update whatever you are currently editing.
 
-External Editor support:
+**Project->New Tab (Ctrl+N)** - Loads a verb into its own tab. Press F5 to compile.
 
-If you set @edit-option local+ on your MOO server, the @edit command will be redirected to MooCoderPy's internal editor.
-Selecting Edit->Send Update (or F5) will issue the correct command to update whatever you are currently editing.
-
-Project->New Tab (Ctrl+N) - Loads a verb into its own tab. Press F5 to compile.
-Project->Get Verbs - Load all the verbs for an object into the verbs window.
+**Project->Get Verbs (Ctrl+Shift+V)** - Load all the verbs for an object into the verbs window.
     You can double click in the Verbs pane to edit that verb.
-Project->Clear Project - Close all code windows and clear verb list
+
+**Project->Clear Project** - Close all code windows and clear verb list
 
 Basic error checking and stack trace implemented.
 
 Syntax Highlighting implemented.
 
-Command History is supported using the up and down arrow keys
+Command History is supported using the **up and down arrow keys**
 
 Each code window has an optional single-line test command which will run on successful compile (F5)
 
 Bracket Matching implemented
 
 Right-Click in code window will bring up a context menu.
-* Goto Line Ctrl+G will got to a line no in a code window.
-* Find Ctrl+F - find text in current window
-* Find Again F3 - repeat last find
-* Replace Ctrl+H - search and replace text
-* Refresh Ctrl+R - Reload page from server
-* Redo Syntax - redo syntax highlighting on page
-* Close - Close current window.
-* Undo - Ctrl+Z - undo last changes
-* Redo - Shift+Ctrl+Z - redo last changes
+* **Goto Line Ctrl+G** will got to a line no in a code window.
+* **Find Ctrl+F** - find text in current window
+* **Find Again F3** - repeat last find
+* **Replace Ctrl+H** - search and replace text
+* **Refresh Ctrl+R** - Reload page from server
+* **Redo Syntax** - redo syntax highlighting on page
+* **Close** - Close current window.
+* **Undo - Ctrl+Z** - undo last changes
+* **Redo - Shift+Ctrl+Z** - redo last changes
 
-== TODO ==
+## TODO ##
 * Double click on errors
 
-== Release History ==
+## Release History ##
 
 0.3.1 - Fixed windows maximized for linux environment
 
