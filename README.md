@@ -61,6 +61,8 @@ Enable tests for local edits.
 Shortcut key to toggle between terminal and last edit page.
 
 ## Release History ##
+0.3.5 - Fixed bug with Ctrl+N adding to verb list
+
 0.3.4 - External edit can have test lines, Ctrl+Shift+T toggle view, additional detail shown in edit window.
 
 0.3.3 - External edit now opens in a seperate tab per item, supports syntax.

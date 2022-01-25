@@ -748,7 +748,7 @@ class TerminalWindow(ScrollText):
             tag=obj+':'+verb
             self.arglist[tag]=args
             if not(tag in self.verblist):
-                self.verblist.append()
+                self.verblist.append(tag)
             try:                
                 pg=self.currentPage().setLabel(progline)
             except:
