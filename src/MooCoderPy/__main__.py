@@ -134,6 +134,9 @@ def doVerbDblClick(event=None):
     nd=verblist.item(verblist.selection())
     tw.loadVerb(nd["text"]+":"+nd["values"][1])
 
+def doStackClick(event:Event):
+    tw.gotoError(stack)
+
 if not("__VERSION+__" in globals()):
     import importlib.metadata
     __VERSION__ = importlib.metadata.version('MooCoderPy-rjmatthews62')
@@ -155,6 +158,7 @@ root.option_add( "*font", myfont)
 root.title("MooCoderPy "+__VERSION__)
 root.protocol("WM_DELETE_WINDOW",doClose)
 stack=Text(root,width=50)
+stack.bind("<Double-Button-1>",doStackClick)
 nb=ttk.Notebook(root)
 mainpack(False)
 

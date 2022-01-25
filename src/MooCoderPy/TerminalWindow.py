@@ -23,6 +23,7 @@ class TerminalWindow(ScrollText):
     dumpobject:str=""
     normalfont:font.Font=None
     testtab:str=""
+    lastlno:int=0
 
     ColorTable = (
         "#000000",
@@ -328,6 +329,8 @@ class TerminalWindow(ScrollText):
         self.sendEntry.bind("<Return>",self.doSendEvent)
         self.sendEntry.bind("<Up>", self.history)
         self.sendEntry.bind("<Down>", self.history)
+        self.textbox.bind("<Double-Button-1>",self.dblClick)
+
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.iscsi = False
@@ -357,6 +360,10 @@ class TerminalWindow(ScrollText):
             for (key,value) in ifile.items("history"):
                 if key.isnumeric():
                     self.historylst.append(value)
+
+    def dblClick(self,event:Event):
+        """Respond to double click"""
+        self.gotoError(self.textbox)
 
     def settag(self):
         tagname = self.myfontcolor + ";" + self.mycolor
@@ -971,3 +978,24 @@ class TerminalWindow(ScrollText):
             self.arglist.clear()
             self.updateVerbs()
             self.pages.select(self)
+
+    def gotoError(self,text:Text):
+        line=text.get(INSERT+" linestart",INSERT+" lineend").strip()
+        if line.startswith('... called from'):
+            line=line[line.find("#"):]   # Strip off leading stuff.
+            (prog,line)=parsesep(line,',')
+            line=parse(line)[1]
+            lno=atol(line)
+            v=self.parseVerb(prog)
+            if v:
+                self.findVerb(v[0],v[1],lno)
+        elif line.startswith('#') and (', line' in line):
+            (prog,line)=parsesep(line,',')
+            line=parse(line)[1] # Skip "line"
+            (tmp,line)=parsesep(line,':')
+            lno=atol(tmp)
+            v=self.parseVerb(prog)     # Should strip out trailing defs.
+            if v:
+                (obj,verb)=v
+                if not self.selectError(obj,verb,lno):
+                    self.fetchVerb(obj,verb)

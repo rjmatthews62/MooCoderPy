@@ -52,10 +52,10 @@ Right-Click in code window will bring up a context menu.
 * **Undo - Ctrl+Z** - undo last changes
 * **Redo - Shift+Ctrl+Z** - redo last changes
 
-## TODO ##
-* Double click on errors
+A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
 
 ## Release History ##
+0.3.2 - Double-click on error messages or stack to go to source line.
 
 0.3.1 - Fixed windows maximized for linux environment
 
