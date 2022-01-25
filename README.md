@@ -55,6 +55,7 @@ Right-Click in code window will bring up a context menu.
 A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
 ## TODO ##
 Enable tests for local edits.
+Shortcut key to toggle between terminal and last edit page.
 
 ## Release History ##
 0.3.3 - External edit now opens in a seperate tab per item, supports syntax.
