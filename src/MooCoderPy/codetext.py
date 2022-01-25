@@ -11,6 +11,7 @@ class CodeText(ScrollText):
     test:Entry
     caption:str
     testvar:StringVar
+    labelvar:StringVar
     modifying=False
     lastfind:str=""
     popup:Menu
@@ -31,6 +32,11 @@ class CodeText(ScrollText):
 
     def __init__(self, parent, mode:int, **kwargs):
         super().__init__(parent, **kwargs)
+        self.textbox.pack_forget()
+        self.labelvar=StringVar()
+        lbl = Label(self,textvariable=self.labelvar,font="Arial 12")
+        lbl.pack(side=TOP,fill=X)
+        self.textbox.pack(fill=BOTH, expand=True)
         self.bottom = Frame(self, bg="LightGray")
         self.bottom.pack(side=BOTTOM, fill=X)
         self.posvar=StringVar()
@@ -83,6 +89,9 @@ class CodeText(ScrollText):
     def close(self):
         """Close this window"""
         self.destroy()
+
+    def setLabel(self,atext):
+        self.labelvar.set(atext)
 
     def undo(self,event:Event=None):
         try:
@@ -381,6 +390,7 @@ if __name__=="__main__":
     c=CodeText(root,CodeText.MODE_CODE, background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
     c.pack(fill=BOTH,expand=True)
     c.syntax=True
+#    c.setLabel("Testing label")
     with open("c:/kev/test.moo","r") as f:
         data=f.read();
         c.setText(data)

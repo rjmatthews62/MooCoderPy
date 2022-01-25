@@ -20,12 +20,13 @@ import SettingsDialog
 import configparser
 
 tw:TerminalWindow
+lastpage:Widget
 
 def doOpen():
     tf = filedialog.askopenfilename(
         initialdir="C:/td/srtmoo/", 
         title="Open Text file", 
-        filetypes=(("Text Files", "*.moo"),)
+        filetypes=(("MOO source Files", "*.moo"),("Text","*.txt"),("Any","*.*"))
         )
     if tf:
         with open(tf,"r") as f:
@@ -57,9 +58,14 @@ def doupdate(event=None):
         tw.docompile(re)
 
 def doTabChanged(event):
+    global lastpage
     tabname=nb.tab("current","text")
     if (tabname=="Terminal"):
         tw.sendEntry.focus()
+    #track previous page for toggle.
+    w=nb.nametowidget(nb.select())
+    if w!=tw:
+        lastpage=w
 
 def donewtab(event=None):
     """Load a verb into a new tab"""
@@ -71,6 +77,15 @@ def viewStack(event=None):
     """Make stack visible."""
     global stackloaded
     mainpack(not stackloaded)
+
+def togglePage(event:Event=None):
+    """Flip between Terminal window and previous view"""
+    global nb,tw,lastpage
+    w=nb.nametowidget(nb.select())
+    if w==tw:
+        nb.select(lastpage)
+    else:
+        nb.select(tw)
 
 def buildMenu():
     menubar=Menu(root)
@@ -91,7 +106,6 @@ def buildMenu():
     
     root.bind("<Control-Shift-Key-V>",tw.getVerbs)
     root.bind("<Control-Shift-Key-v>",tw.getVerbs)
-    
     # Apparently the key binding is case sensitive...
     root.bind("<Control-Key-N>",donewtab)
     root.bind("<Control-Key-n>",donewtab)
@@ -101,6 +115,9 @@ def buildMenu():
     menubar.add_cascade(label="Project",menu=projectmenu, underline=0)
     viewmenu=Menu(menubar,tearoff=0)
     viewmenu.add_command(label="Stack", command=viewStack,underline=0)
+    viewmenu.add_command(label="Toggle View Ctrl+Shift+T", command=togglePage, underline=0)
+    root.bind("<Control-Shift-Key-T>",togglePage)
+    root.bind("<Control-Shift-Key-t>",togglePage)
     menubar.add_cascade(label="View",menu=viewmenu,underline=0)
     root.config(menu=menubar)
 
@@ -159,6 +176,7 @@ nb.add(tw,text="Terminal")
 
 verbframe=Frame(nb)
 nb.add(verbframe,text="Verbs")
+lastpage=verbframe
 verblist=ttk.Treeview(verbframe,columns=("c1","c2","c3","c4"))
 verblist.heading("#0",text="Obj")
 verblist.heading("c1",text="Name")

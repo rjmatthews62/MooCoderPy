@@ -714,8 +714,9 @@ class TerminalWindow(ScrollText):
                 if t[i].endswith('[normal]'): # Stupid ansi is stupid.
                     s=t[i]
                     t[i]=s[0:len(s)-len('[normal]')]
+            progline=prog
             (obj,prog)=parsesep(prog,':')
-            args=prog;
+            args=prog
             if (args.startswith('"')):
                 args=args.replace('"','').strip()
             (verb,prog)=parse(prog)
@@ -748,6 +749,10 @@ class TerminalWindow(ScrollText):
             self.arglist[tag]=args
             if not(tag in self.verblist):
                 self.verblist.append()
+            try:                
+                pg=self.currentPage().setLabel(progline)
+            except:
+                pass
             self.updateVerbs()
         else:
             self.verbcollect+=line+"\n"
@@ -768,6 +773,7 @@ class TerminalWindow(ScrollText):
             re=self.addTab(name,text,CodeText.MODE_EDIT)
         re.upload=upload
         re.syntax=(upload.find("@program")>=0)
+        re.setLabel(upload)
         re.highlight()
         self.pages.select(re)
         
@@ -854,6 +860,16 @@ class TerminalWindow(ScrollText):
         self.sendCmd(upload)
         self.sendCmd(text)
         self.after(500,self.sendtext,"Update complete\n")
+        e=self.currentTest()
+        if e and (e.get()!=""):
+            test=e.get()
+            self.testtab=self.pages.select()
+            self.getstack=False
+            self.onExamineLine=self.doCheckTest
+            ifile=SettingsDialog.getConfig()
+            ifile["test"][self.currentPage().testName()]=e.get()
+            SettingsDialog.saveConfig(ifile)
+            self.after(1000,self.sendCmd,test)
         self.pages.select(self)
         return True
     

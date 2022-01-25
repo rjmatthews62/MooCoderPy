@@ -23,6 +23,7 @@ Can be installed via pip:
 
 If you set **@edit-option local+** on your MOO server, the **@edit** command will be redirected to MooCoderPy's internal editor.
 Selecting **Edit->Send Update (or F5)** will issue the correct command to update whatever you are currently editing.
+Each edited item will have its own tab, and you can use the test line as for the verbs.
 
 **Project->New Tab (Ctrl+N)** - Loads a verb into its own tab. Press F5 to compile.
 
@@ -30,6 +31,8 @@ Selecting **Edit->Send Update (or F5)** will issue the correct command to update
     You can double click in the Verbs pane to edit that verb.
 
 **Project->Clear Project** - Close all code windows and clear verb list
+
+**View->Toggle View Ctrl+Shift+Y** - Toggle between terminal and previous edit view.
 
 Basic error checking and stack trace implemented.
 
@@ -58,6 +61,8 @@ Enable tests for local edits.
 Shortcut key to toggle between terminal and last edit page.
 
 ## Release History ##
+0.3.4 - External edit can have test lines, Ctrl+Shift+T toggle view, additional detail shown in edit window.
+
 0.3.3 - External edit now opens in a seperate tab per item, supports syntax.
 
 0.3.2 - Double-click on error messages or stack to go to source line.
