@@ -8,6 +8,7 @@ import time
 
 class ScrollText(tk.Text):
     tabtype=0
+    fontsize:int=12
 
     def __init__(self, parent, **kwargs):
         tk.Frame.__init__(self,parent)
@@ -19,6 +20,10 @@ class ScrollText(tk.Text):
         self.queue=Queue(20)
         self.bind("<<sendtext>>",self.handletext)
     
+    def setFontSize(self,newsize:int):
+        self.textbox.configure(font=("Courier",newsize,"bold"))
+        self.fontsize=newsize
+
     def sendtext(self,msg):
         self.queue.put(msg)
         self.event_generate("<<sendtext>>",when='tail')

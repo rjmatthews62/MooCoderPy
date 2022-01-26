@@ -21,6 +21,7 @@ import configparser
 
 tw:TerminalWindow
 lastpage:Widget
+fontsize:int=12
 
 def doOpen():
     tf = filedialog.askopenfilename(
@@ -50,7 +51,16 @@ def doDisconnect():
     tw.disconnect()
 
 def doSettings():
+    global fontsize,nb
+    oldsize=fontsize
     SettingsDialog.SettingsDialog(root,title="Server Configuration")
+    getInitalSettings()
+    if (fontsize!=oldsize):
+        for tab in nb.tabs():
+            w=nb.nametowidget(tab)
+            if hasattr(w,"setFontSize"):
+                w.setFontSize(fontsize)
+
 
 def doupdate(event=None):
     re=tw.currentPage()
@@ -133,8 +143,14 @@ def mainpack(usestack:bool):
     stackloaded=usestack
 
 def loadSettings():
+    global fontsize
     ifile=SettingsDialog.getConfig()
     tw.dumpobject=ifile['settings'].get('LastDump',"")
+
+def getInitalSettings():
+    global fontsize
+    ifile=SettingsDialog.getConfig()
+    fontsize=ifile['settings'].getint("fontsize",12)
 
 def doVerbDblClick(event=None):
     nd=verblist.item(verblist.selection())
@@ -160,6 +176,7 @@ except:
         print("Didn't need that dumb icon anyway.")
 
 myfont=font.Font(name="Arial",size=10)
+getInitalSettings()
 root.option_add( "*font", myfont)
 root.title("MooCoderPy "+__VERSION__)
 root.protocol("WM_DELETE_WINDOW",doClose)
@@ -168,8 +185,9 @@ stack.bind("<Double-Button-1>",doStackClick)
 nb=ttk.Notebook(root)
 mainpack(False)
 
-tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",fontsize,"bold"),insertbackground="white")
 tw.normalfont=myfont
+tw.setFontSize(fontsize)
 tw.setstackvisible=mainpack
 tw.stack=stack
 nb.add(tw,text="Terminal")

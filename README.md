@@ -14,7 +14,7 @@ Can be installed via pip:
 * pip install moocoderpy-rjmatthews62
 * python -m MooCoderPy
 ## Setup ##
-* **Setup -> Server Config** : set server address (and port) 
+* **Settings -> Server Config** : set server address (and port). You can also set font size. 
 * **File -> Connect** - Connect to server
 * **File -> Disconnect** - Disconnect from server
 * **File -> Open** - Open a local file in the editor
@@ -56,11 +56,10 @@ Right-Click in code window will bring up a context menu.
 * **Redo - Shift+Ctrl+Z** - redo last changes
 
 A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
-## TODO ##
-Enable tests for local edits. (Done)
-Shortcut key to toggle between terminal and last edit page. (Done)
 
 ## Release History ##
+0.3.6 - Adjustable font size (in Setup-->Server Config)
+
 0.3.5 - Fixed bug with Ctrl+N adding to verb list
 
 0.3.4 - External edit can have test lines, Ctrl+Shift+T toggle view, additional detail shown in edit window.

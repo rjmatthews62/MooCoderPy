@@ -15,9 +15,14 @@ class SettingsDialog(tkinter.simpledialog.Dialog):
         self.e2var = StringVar(value=settings.get("Connect","login command here"))
         self.e1 = Entry(master,width=60,font=f,textvariable=self.e1var)
         self.e2 = Entry(master,width=60,font=f,textvariable=self.e2var)
-
+        self.fontvar=StringVar()
+        Label(master,text="Font Size:",font=f).grid(row=2)
+        self.spinbox=Spinbox(master,font=f,values=("6","8","10","12","14","16","18","20"),textvariable=self.fontvar)
+        self.fontvar.set(settings.get("fontsize","12"))
         self.e1.grid(row=0, column=1)
         self.e2.grid(row=1, column=1)
+        self.spinbox.grid(row=2,column=1,sticky=W)
+
         return self.e1 # initial focus
 
     def apply(self):
@@ -28,6 +33,7 @@ class SettingsDialog(tkinter.simpledialog.Dialog):
         settings=self.inifile["settings"]
         settings["Server"]=first
         settings["Connect"]=second
+        settings["Fontsize"]=self.fontvar.get()
         saveConfig(self.inifile)
 
 def getConfigFile():

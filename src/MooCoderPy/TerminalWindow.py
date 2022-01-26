@@ -683,7 +683,7 @@ class TerminalWindow(ScrollText):
                  self.showmessage(line)
 
     def addTab(self,caption:str,text:str,tabtype:int):
-        t=CodeText(self.pages,tabtype,background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+        t=CodeText(self.pages,tabtype,background="black",foreground="white",font=("Courier",self.fontsize,"bold"),insertbackground="white")
         self.pages.add(t,text=caption)
         t.tw=self
         t.setText(text)
