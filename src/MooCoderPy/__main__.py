@@ -134,12 +134,12 @@ def buildMenu():
 def mainpack(usestack:bool):
     """Pack the main window so it's possible to hide and reload stack"""
     global stackloaded
-    nb.pack_forget()
-    stack.pack_forget()
-    nb.pack(side=LEFT, fill=Y)
+    try:
+        pane.forget(stack)
+    except:
+        pass
     if usestack:
-        stack.pack(side=LEFT,fill=Y)
-    nb.pack(fill=BOTH,expand=True)
+        pane.add(stack,weight=1)
     stackloaded=usestack
 
 def loadSettings():
@@ -180,9 +180,13 @@ getInitalSettings()
 root.option_add( "*font", myfont)
 root.title("MooCoderPy "+__VERSION__)
 root.protocol("WM_DELETE_WINDOW",doClose)
-stack=Text(root,width=50)
+pane=ttk.PanedWindow(root,orient=HORIZONTAL)
+pane.pack(fill=BOTH, expand=True)
+
+stack=Text(pane,width=50)
 stack.bind("<Double-Button-1>",doStackClick)
-nb=ttk.Notebook(root)
+nb=ttk.Notebook(pane)
+pane.add(nb,weight=5)
 mainpack(False)
 
 tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",fontsize,"bold"),insertbackground="white")
