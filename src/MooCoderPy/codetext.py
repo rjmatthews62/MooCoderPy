@@ -125,7 +125,10 @@ class CodeText(ScrollText):
             messagebox.showwarning("MooCoderPy","No Connection to Server")
             return
         if (self.mode!=self.MODE_CODE):
-            messagebox.showerror("MooCoderPy","Local Edit Refresh is not supported.")
+            if self.upload=="":
+                messagebox.showerror("MooCoderPy","No upload command.")
+            else:
+                self.tw.sendCmd("@edit "+self.caption)
         self.tw.doRefresh(self.caption)
 
     def currentLine(self)->int:

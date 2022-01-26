@@ -769,7 +769,9 @@ class TerminalWindow(ScrollText):
     def openEdit(self,name:str, upload:str, text:str):
         """Find and open a tab for a local edit"""
         re=self.findLocalEdit(name)
-        if not re:
+        if re:
+            re.setText(text)
+        else:
             re=self.addTab(name,text,CodeText.MODE_EDIT)
         re.upload=upload
         re.syntax=(upload.find("@program")>=0)
