@@ -58,7 +58,7 @@ Right-Click in code window will bring up a context menu.
 A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
 
 ## Release History ##
-0.3.6 - Adjustable font size (in Setup-->Server Config)
+0.3.6 - Adjustable font size (in Setup-->Server Config). Local Edit refresh now works
 
 0.3.5 - Fixed bug with Ctrl+N adding to verb list
 
