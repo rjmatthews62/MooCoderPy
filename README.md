@@ -32,7 +32,7 @@ Each edited item will have its own tab, and you can use the test line as for the
 
 **Project->Clear Project** - Close all code windows and clear verb list
 
-**View->Toggle View Ctrl+Shift+Y** - Toggle between terminal and previous edit view.
+**View->Toggle View Ctrl+Shift+T** - Toggle between terminal and previous edit view.
 
 Basic error checking and stack trace implemented.
 
@@ -58,6 +58,8 @@ Right-Click in code window will bring up a context menu.
 A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
 
 ## Release History ##
+0.3.8 - Readme Correction
+
 0.3.7 - Make stack pane sizable
 
 0.3.6 - Adjustable font size (in Setup-->Server Config). Local Edit refresh now works
