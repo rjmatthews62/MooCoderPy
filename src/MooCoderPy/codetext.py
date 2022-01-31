@@ -66,6 +66,14 @@ class CodeText(ScrollText):
         self.textbox.bind("<Button-3>",self.doPopup)
         self.textbox.bind("<Button-2>",self.doPopup) # For Mac, in theory.
         self.textbox.configure(undo=True,exportselection=False,inactiveselectbackground=self.textbox["selectbackground"])
+        self.textbox.bind("<Return>",self.handleIndent)
+
+    def handleIndent(self,event:Event):
+        line=self.textbox.get("insert linestart","insert lineend")
+        match = re.match(r'^(\s+)', line)
+        current_indent = len(match.group(0)) if match else 0
+        self.textbox.insert(INSERT,"\n"+(" " * current_indent))
+        return "break"
 
     def buildPopup(self):
         """Make the Popup menu"""
