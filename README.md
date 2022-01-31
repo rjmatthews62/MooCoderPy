@@ -67,7 +67,7 @@ A double-click on an error message or stack trace in either the stack or the mai
 * You can add a test command for each property page.
 
 ## Release History ##
-0.4.0 - Fix to error message in Edit as Text
+0.4.1 - Fix to error message in Edit as Text
 
 0.3.9 - Property Editing.
 
