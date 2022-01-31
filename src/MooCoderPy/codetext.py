@@ -61,11 +61,11 @@ class CodeText(ScrollText):
         self.bind_all("<Control-Key-R>",self.refresh)
         self.bind_all("<Control-Key-r>",self.refresh)
         self.bind_all("<F3>",self.findAgain)
+        self.mode=mode
         self.buildPopup()
         self.textbox.bind("<Button-3>",self.doPopup)
         self.textbox.bind("<Button-2>",self.doPopup) # For Mac, in theory.
         self.textbox.configure(undo=True,exportselection=False,inactiveselectbackground=self.textbox["selectbackground"])
-        self.mode=mode
 
     def buildPopup(self):
         """Make the Popup menu"""
@@ -85,7 +85,30 @@ class CodeText(ScrollText):
         self.textbox.bind("<Shift-Control-Z>",self.redo)
         p.add_command(label="Redo Syntax",command=self.highlight,underline=10)
         p.add_command(label="Close",command=self.close,underline=0)
+        if self.mode==CodeText.MODE_PROPERTY:
+            p.add_command(label="Edit as Text",command=self.flattenText,underline=3)
         self.popup=p
+
+    def flattenText(self):
+        text=self.getText().split("\n")
+        if len(text)<2 or not text[0].startswith("{"):
+            self.showmessage("Not a list.")
+            return
+        text=text[1:-1]
+        if text[-1]=="}":
+            text=text[:-1]
+        for (k,line) in enumerate(text):
+            line=line.strip()
+            if line.startswith('"'):
+                line=line[1:]
+            if line.endswith(","):
+                line=line[:-1]
+            if line.endswith('"'):
+                line=line[:-1]
+            line=line.replace(r'\"','"')
+            text[k]=line
+        self.syntax=False
+        self.setText("\n".join(text))
 
     def close(self):
         """Close this window"""

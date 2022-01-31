@@ -30,6 +30,7 @@ class TerminalWindow(ScrollText):
     normalfont:font.Font=None
     testtab:str=""
     lastlno:int=0
+    lastproperty:str=""
 
     ColorTable = (
         "#000000",
@@ -43,7 +44,7 @@ class TerminalWindow(ScrollText):
     )
     ColorTableBold = (
         "#000000",
-        "#f0000",
+        "#ff0000",
         "#00ff00",
         "#ffff00",
         "#0000ff",
@@ -684,17 +685,23 @@ class TerminalWindow(ScrollText):
             self.onExamineLine=self.doCheckTest
         elif line=='Verb programmed.':
             self.onExamineLine=self.doCheckTest
-            e=self.currentTest()
-            if e and (e.get()!=""):
-                self.sendCmd(e.get())
-                self.testtab=self.pages.select()
-                self.getstack=False
-                ifile=SettingsDialog.getConfig()
-                ifile["test"][self.currentPage().testName()]=e.get()
-                SettingsDialog.saveConfig(ifile)
-                self.pages.select(self)
-            else:
-                 self.showmessage(line)
+            if not self.checkSendTest():
+                self.showmessage(line)
+    
+    def checkSendTest(self)->bool:
+        e=self.currentTest()
+        if e and (e.get()!=""):
+            self.sendCmd(e.get())
+            self.testtab=self.pages.select()
+            self.getstack=False
+            ifile=SettingsDialog.getConfig()
+            ifile["test"][self.currentPage().testName()]=e.get()
+            SettingsDialog.saveConfig(ifile)
+            self.onExamineLine=self.doCheckTest
+            self.pages.select(self)
+            return True
+        else:
+            return False
 
     def addTab(self,caption:str,text:str,tabtype:int):
         t=CodeText(self.pages,tabtype,background="black",foreground="white",font=("Courier",self.fontsize,"bold"),insertbackground="white")
@@ -844,7 +851,7 @@ class TerminalWindow(ScrollText):
                     self.lvVerbs.see(i)
                     break
 
-    def updateProperties(self):
+    def updateProperties(self,focus=True):
         """Update Property List"""
         oldprop=""
         nd=self.lvProperties.item(self.lvProperties.focus())
@@ -859,7 +866,8 @@ class TerminalWindow(ScrollText):
             name=self.namelist[obj] if obj in self.namelist else obj
             self.lvProperties.insert("",END,text=obj, values=(name,prop,v))
         self.fitListContents(self.lvProperties)
-        self.pages.select(self.lvProperties.winfo_parent())
+        if (focus):
+            self.pages.select(self.lvProperties.winfo_parent())
         if oldprop!="":
             for i in self.lvProperties.get_children():
                 nd=self.lvProperties.item(i)
@@ -920,10 +928,17 @@ class TerminalWindow(ScrollText):
         if page.mode==CodeText.MODE_EDIT:
             self.doupdate(page.upload,page.textbox.get("1.0","end"))
         elif page.mode==CodeText.MODE_PROPERTY:
-            value=splitlist.joinList(page.getText())
+            text=page.getText()
+            if len(text)>0 and not(text[0] in "{["): # Not formatted as a list. Treat as list of strings.
+                text=text[:-1] if  text.endswith("\n") else text
+                text=text.split("\n")
+                text=[line.replace('"',r'\"') for line in text]
+                value='{"'+'","'.join(text)+'"}'
+            else:
+                value=splitlist.joinList(page.getText())
             self.sendCmd(page.upload+"="+value)
             self.proplist[page.caption]=value
-            self.updateProperties()
+            self.updateProperties(False)
             self.onExamineLine=self.doCheckUpdateProperty
         else:
             self.sendCmd(page.textbox.get("1.0","end"))
@@ -1144,6 +1159,9 @@ class TerminalWindow(ScrollText):
         """Check on the results of an edit prop"""
         if not line.startswith('=> 0'):
             self.showmessage(line)
+        else:
+            if self.checkSendTest():
+                return
         self.onExamineLine=self.doCheckTest
 
             

@@ -116,9 +116,9 @@ def splitList(line):
             prevchar=c
     return result
 
-
-s='{{["damage" -> 0.6, "name" -> "Simple", "percent" -> 75], ["damage" -> 0.7, "name" -> "Basic", "percent" -> 60], ["damage" -> 0.8, "name" -> "Standard", "percent" -> 45], ["damage" -> 1.0, "name" -> "Moderate", "percent" -> 30], ["damage" -> 1.0, "name" -> "Difficult", "percent" -> 15], ["damage" -> {1.25,2,5}, "name" -> "Direct", "percent" -> 0], ["damage" -> 1.5, "name" -> "Taxing", "percent" -> -15],{1,2,3}}}'
-print(splitList2(s))
-print(splitList('1'))
-print(splitList2('{"I am a string", "List of", "Strings"}'))
-print("Rejoined: ",joinList(splitList2(s)))
+if __name__=="__main__":
+    s='{{["damage" -> 0.6, "name" -> "Simple", "percent" -> 75], ["damage" -> 0.7, "name" -> "Basic", "percent" -> 60], ["damage" -> 0.8, "name" -> "Standard", "percent" -> 45], ["damage" -> 1.0, "name" -> "Moderate", "percent" -> 30], ["damage" -> 1.0, "name" -> "Difficult", "percent" -> 15], ["damage" -> {1.25,2,5}, "name" -> "Direct", "percent" -> 0], ["damage" -> 1.5, "name" -> "Taxing", "percent" -> -15],{1,2,3}}}'
+    print(splitList2(s))
+    print(splitList('1'))
+    print(splitList2('{"I am a string", "List of", "Strings"}'))
+    print("Rejoined: ",joinList(splitList2(s)))
