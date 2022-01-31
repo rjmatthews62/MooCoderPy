@@ -337,6 +337,7 @@ class TerminalWindow(ScrollText):
         self.sendEntry.bind("<Up>", self.history)
         self.sendEntry.bind("<Down>", self.history)
         self.textbox.bind("<Double-Button-1>",self.dblClick)
+        self.textbox.configure(exportselection=False,inactiveselectbackground=self.textbox["selectbackground"])
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -377,8 +378,11 @@ class TerminalWindow(ScrollText):
             self.flush()
         if not (tagname in self.taglist):
             cfg = {"background": self.mycolor, "foreground": self.myfontcolor}
+#            if (self.mycolor=="#000000" or self.mycolor=="black"):
+#                del cfg["background"]
             self.textbox.tag_config(tagname, cfg)
             self.taglist.append(tagname)
+            self.textbox.tag_raise(SEL) # Make sure selection overrides.
         self.currenttag = tagname
     
     def parseVerb(self,value):
@@ -820,7 +824,7 @@ class TerminalWindow(ScrollText):
         aname=getsepfield(line,1,'"')
         self.namelist[self.lastobj]=aname
         self.updateVerbs()
-        self.updateProperties()
+        self.updateProperties(False)
     
     def updateVerbs(self)->None:
         """Update Verb list window"""
@@ -1164,5 +1168,10 @@ class TerminalWindow(ScrollText):
                 return
         self.onExamineLine=self.doCheckTest
 
-            
+if __name__=="__main__":
+    root=Tk()
+    tw=TerminalWindow(root)
+    tw.pack(fill=BOTH, expand=True)
+    tw.sendtext("Mary had a little lamb.")
+    root.mainloop()
 

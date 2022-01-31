@@ -197,6 +197,7 @@ pane.add(nb,weight=5)
 mainpack(False)
 
 tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",fontsize,"bold"),insertbackground="white")
+
 tw.normalfont=myfont
 tw.setFontSize(fontsize)
 tw.setstackvisible=mainpack

@@ -325,6 +325,7 @@ class CodeText(ScrollText):
         for col in self.COLORLIST:
             self.textbox.tag_configure(col,foreground=col)
         self.textbox.tag_configure("bracket",foreground="white",background="red")
+        self.textbox.tag_raise(SEL) # Selection should have priority.
 
     def lastLine(self)->int:
         """Highest line no of edit"""
