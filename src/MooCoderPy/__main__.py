@@ -163,9 +163,12 @@ def doPropDblClick(event=None):
 def doStackClick(event:Event):
     tw.gotoError(stack)
 
-if not("__VERSION+__" in globals()):
+if not("__VERSION__" in globals()):
     import importlib.metadata
-    __VERSION__ = importlib.metadata.version('MooCoderPy-rjmatthews62')
+    try:
+        __VERSION__ = importlib.metadata.version('MooCoderPy-rjmatthews62')
+    except:
+        __VERSION__ = "code only"
 
 print("MooCoderPy",__VERSION__)
 root = Tk()
