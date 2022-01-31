@@ -7,8 +7,7 @@ from tkinter import font
 from tkinter import scrolledtext
 from tkinter import simpledialog
 import os,sys
-from turtle import width
-from MooCoderPy.SettingsDialog import getConfig
+
 # Stupid packaging messes with paths...
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 print("SCRIPT_DIR=",SCRIPT_DIR)
