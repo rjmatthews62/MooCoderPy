@@ -88,11 +88,14 @@ class CodeText(ScrollText):
         if self.mode==CodeText.MODE_PROPERTY:
             p.add_command(label="Edit as Text",command=self.flattenText,underline=3)
         self.popup=p
+    
+    def warn(self,text:str):
+            messagebox.showwarning("MooCoderPy",text)
 
     def flattenText(self):
         text=self.getText().split("\n")
         if len(text)<2 or not text[0].startswith("{"):
-            self.showmessage("Not a list.")
+            self.warn("Not a list.")
             return
         text=text[1:-1]
         if text[-1]=="}":
