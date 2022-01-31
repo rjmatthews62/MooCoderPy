@@ -57,7 +57,18 @@ Right-Click in code window will bring up a context menu.
 
 A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
 
+## Property Editing ##
+**Project-->Get Properties** Will load all the properties of an object into the "Properties" tab.
+* Double clicking will allow editing of the property.
+* Simple types (String, Int, Float, Object) will be edited in a popup window. 
+* More complicated types (Map, List) are edited in an edit window. The lists and maps are split into lines for ease of reading and editing. The extra lines will be removed on update.
+* Use  F5 to write the update back to the server.
+* List Properties can be converted to plain text for ease of editing. This will only work with simple lists, and will save as a flattened list of strings.
+* You can add a test command for each property page.
+
 ## Release History ##
+0.3.9 - Property Editing.
+
 0.3.8 - Readme Correction
 
 0.3.7 - Make stack pane sizable
