@@ -48,7 +48,10 @@ class ScrollText(tk.Text):
     def addtext(self,msg):
             self.textbox.insert("end",msg)
             self.textbox.see("end")
-            
+    
+    def getText(self)->str:
+        return self.textbox.get("1.0",tk.END)
+
     def testSend(self):
         time.sleep(2)
         self.sendtext("This should appear after 5 seconds\nAnd this is a second line.")

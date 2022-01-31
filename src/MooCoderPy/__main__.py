@@ -64,7 +64,7 @@ def doSettings():
 
 def doupdate(event=None):
     re=tw.currentPage()
-    if re and re.tabtype in (CodeText.MODE_EDIT,CodeText.MODE_CODE):
+    if re and re.tabtype in (CodeText.MODE_EDIT,CodeText.MODE_CODE,CodeText.MODE_PROPERTY):
         tw.docompile(re)
 
 def doTabChanged(event):
@@ -112,6 +112,7 @@ def buildMenu():
     projectmenu=Menu(menubar,tearoff=0)
     projectmenu.add_command(label="New Tab Ctrl+N",command=donewtab,underline=0)
     projectmenu.add_command(label="Get Verbs Ctrl+Shift+V",command=tw.getVerbs,underline=0)
+    projectmenu.add_command(label="Get Properties",command=tw.getProperties,underline=4)
     projectmenu.add_command(label="Clear Project",command=tw.clearProject,underline=0)
     
     root.bind("<Control-Shift-Key-V>",tw.getVerbs)
@@ -155,6 +156,10 @@ def getInitalSettings():
 def doVerbDblClick(event=None):
     nd=verblist.item(verblist.selection())
     tw.loadVerb(nd["text"]+":"+nd["values"][1])
+
+def doPropDblClick(event=None):
+    nd=proplist.item(proplist.selection())
+    tw.editProp(nd["text"]+"."+nd["values"][1])
 
 def doStackClick(event:Event):
     tw.gotoError(stack)
@@ -213,9 +218,26 @@ verblist.bind("<Double-Button-1>",doVerbDblClick)
 verblist.style=ttk.Style(verblist)
 verblist.style.configure("Treeview",font=myfont)
 verblist.style.configure("Treeview.Heading",font=myfont)
-print(verblist.style)
+
+propframe=Frame(nb)
+nb.add(propframe,text="Properties")
+
+proplist=ttk.Treeview(propframe,columns=("name","prop","detail"))
+proplist.heading("#0",text="Obj")
+proplist.heading("name",text="Name")
+proplist.heading("prop",text="Property")
+proplist.heading("detail",text="Detail")
+proplist.style=verblist.style
+proplist.pack(fill=BOTH, expand=True)
+proplist.column("#0",stretch=False,width=50)
+proplist.column(0,stretch=False,width=50)
+proplist.column(1,stretch=False,width=50)
+tw.fitListContents(proplist)
+proplist.bind("<Double-Button-1>",doPropDblClick)
+
 nb.enable_traversal()
 tw.lvVerbs=verblist
+tw.lvProperties=proplist
 nb.bind("<<NotebookTabChanged>>",func=doTabChanged)
 nb.select(tw)
 tw.pages=nb

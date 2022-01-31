@@ -1,5 +1,6 @@
 from tkinter import simpledialog
 from tkinter.ttk import Notebook
+from warnings import showwarning
 from ScrollText import *
 from tkinter import *
 from tkinter import messagebox,font
@@ -7,6 +8,9 @@ import socket, threading,select
 import SettingsDialog
 from codetext import *
 from wgplib import *
+import re
+import mydialogs
+import splitlist
 
 
 class TerminalWindow(ScrollText):
@@ -17,9 +21,11 @@ class TerminalWindow(ScrollText):
     errorverb:str=""
     arglist={}
     verblist=[]
+    proplist={}
     namelist={}
     lastobj:str=""
     lvVerbs:ttk.Treeview=None
+    lvProperties:ttk.Treeview=None
     dumpobject:str=""
     normalfont:font.Font=None
     testtab:str=""
@@ -37,7 +43,7 @@ class TerminalWindow(ScrollText):
     )
     ColorTableBold = (
         "#000000",
-        "#ff0000",
+        "#f0000",
         "#00ff00",
         "#ffff00",
         "#0000ff",
@@ -596,6 +602,14 @@ class TerminalWindow(ScrollText):
                     if ansiSameText(aobj,obj) and ansiSameText(averb,searchverb):
                         return re
         return None
+    
+    def findPage(self,title:str):
+        """Return widget matching title, or None if not found."""
+        for i in self.pages.tabs():
+            tabname=self.pages.tab(i,"text")
+            if tabname==title:
+                return self.pages.nametowidget(i)
+        return None
 
     def currentEditor(self)->Text:
         w=self.currentPage()
@@ -799,6 +813,7 @@ class TerminalWindow(ScrollText):
         aname=getsepfield(line,1,'"')
         self.namelist[self.lastobj]=aname
         self.updateVerbs()
+        self.updateProperties()
     
     def updateVerbs(self)->None:
         """Update Verb list window"""
@@ -827,6 +842,30 @@ class TerminalWindow(ScrollText):
                 if nd["text"].lower()==oldobj and nd["values"][1].lower()==oldverb:
                     self.lvVerbs.selection_set(i)
                     self.lvVerbs.see(i)
+                    break
+
+    def updateProperties(self):
+        """Update Property List"""
+        oldprop=""
+        nd=self.lvProperties.item(self.lvProperties.focus())
+        if nd["text"]!="":
+            oldobj=nd["text"].lower()
+            oldprop=nd["values"][1].lower()
+        for item in self.lvProperties.get_children():
+            self.lvProperties.delete(item)
+        for k in sorted(self.proplist.keys()):
+            v=self.proplist[k]
+            (obj,prop)=k.split(".")
+            name=self.namelist[obj] if obj in self.namelist else obj
+            self.lvProperties.insert("",END,text=obj, values=(name,prop,v))
+        self.fitListContents(self.lvProperties)
+        self.pages.select(self.lvProperties.winfo_parent())
+        if oldprop!="":
+            for i in self.lvProperties.get_children():
+                nd=self.lvProperties.item(i)
+                if nd["text"].lower()==oldobj and nd["values"][1].lower()==oldprop:
+                    self.lvProperties.selection_set(i)
+                    self.lvProperties.see(i)
                     break
 
     def fitListContents(self,alist:ttk.Treeview):
@@ -880,6 +919,12 @@ class TerminalWindow(ScrollText):
             return
         if page.mode==CodeText.MODE_EDIT:
             self.doupdate(page.upload,page.textbox.get("1.0","end"))
+        elif page.mode==CodeText.MODE_PROPERTY:
+            value=splitlist.joinList(page.getText())
+            self.sendCmd(page.upload+"="+value)
+            self.proplist[page.caption]=value
+            self.updateProperties()
+            self.onExamineLine=self.doCheckUpdateProperty
         else:
             self.sendCmd(page.textbox.get("1.0","end"))
             self.onExamineLine=self.doCheckCompile
@@ -907,6 +952,7 @@ class TerminalWindow(ScrollText):
         if (self.connectString!=""):
             self.after(1000,self.sendCmd,self.connectString)
         print("Connected")
+    
     def showmessage(self,msg):
         messagebox.showinfo("MooCoderPy",msg)
 
@@ -983,6 +1029,28 @@ class TerminalWindow(ScrollText):
             self.sendCmd('@verbs '+self.dumpobject)
             self.onExamineLine=self.doCheckVerbs
 
+    def getProperties(self,event:Event=None):
+        s=simpledialog.askstring('Prpperties','Load Property list for object:', initialvalue=self.dumpobject)
+        if (s):
+            self.dumpobject=s
+            self.sendCmd('@dump '+self.dumpobject+" with noverbs")
+            self.onExamineLine=self.doCheckProperties
+
+    def doCheckProperties(self,line:str):
+        # ;;#151.("rank_chart") = {"-", "F", "D", "C", "B", "A", "S", "SS", "SSS", "SSSS", "SSSSS"}
+        if line.startswith(";;#"):
+            (k,v)=parsesep(line," = ")
+            k=re.sub(r'["();]',"",k)
+            self.proplist[k]=v
+            self.lastobj=getsepfield(k,0,".")
+            p=self.findPage(k)
+            if p:
+                p.setText(splitlist.splitList2(v))
+        elif "***finished***" in line:
+            self.onExamineLine=self.doCheckTest
+            self.updateProperties()
+            self.checkName(self.lastobj)
+
     def doCheckVerbs(self,line:str)->None:
         """Fetch verbs for an object"""
         self.onExamineLine=self.doCheckTest
@@ -1018,7 +1086,9 @@ class TerminalWindow(ScrollText):
             self.verblist.clear()
             self.namelist.clear()
             self.arglist.clear()
+            self.proplist.clear()
             self.updateVerbs()
+            self.updateProperties()
             self.pages.select(self)
 
     def gotoError(self,text:Text):
@@ -1041,3 +1111,40 @@ class TerminalWindow(ScrollText):
                 (obj,verb)=v
                 if not self.selectError(obj,verb,lno):
                     self.fetchVerb(obj,verb)
+    
+    def editProp(self,propname:str):
+        """Edit a property"""
+        try:
+            (obj,prop)=propname.split(".")
+        except:
+            messagebox.showwarning("MooCoderPy","Invalid property format.")
+            return
+        if not(propname in self.proplist):
+            messagebox.showwarning("MooCoderPy","Unknown Property.")
+            return
+        value=self.proplist[propname]
+        if value.startswith("[") or value.startswith("{"):
+            myedit=self.findPage(propname)
+            if not(myedit):
+                myedit=self.addTab(propname,"",CodeText.MODE_PROPERTY)
+            myedit.setText(splitlist.splitList2(value))
+            myedit.upload=";;"+propname
+            myedit.setLabel(myedit.upload)
+            self.pages.select(myedit)
+            return
+        newvalue=mydialogs.askstring("Edit "+propname,"New Value",initialvalue=value,width=80)
+        if (not newvalue):
+            return
+        self.proplist[propname]=newvalue
+        self.sendCmd(";;"+propname+"="+newvalue)
+        self.updateProperties()
+        self.onExamineLine=self.doCheckUpdateProperty
+    
+    def doCheckUpdateProperty(self,line:str):
+        """Check on the results of an edit prop"""
+        if not line.startswith('=> 0'):
+            self.showmessage(line)
+        self.onExamineLine=self.doCheckTest
+
+            
+

@@ -16,7 +16,7 @@ def parsesep(s:str, sep:str=","):
     if i<0:
         i=len(s)
     result=s[0:i]
-    remain=s[i+1:]
+    remain=s[i+len(sep):]
     return (result,remain)
 
 def getsepfield(s:str, n:int, sep:str=","):
@@ -27,7 +27,7 @@ def getsepfield(s:str, n:int, sep:str=","):
     return list[n]
 
 def getfield(s:str, n:int):
-    """Get nth worh in s, separated by whitespace."""
+    """Get nth word in s, separated by whitespace."""
     list=s.split()
     if n<0 or n>=len(list):
         return ""

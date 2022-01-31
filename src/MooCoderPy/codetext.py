@@ -29,6 +29,7 @@ class CodeText(ScrollText):
     CLOSEBRACKETS=(")","}","]")
     MODE_CODE = 1
     MODE_EDIT = 2
+    MODE_PROPERTY = 3
 
     def __init__(self, parent, mode:int, **kwargs):
         super().__init__(parent, **kwargs)
