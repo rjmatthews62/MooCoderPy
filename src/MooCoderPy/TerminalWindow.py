@@ -748,7 +748,7 @@ class TerminalWindow(ScrollText):
             self.editProp(self.lastproperty)
             self.checkName(self.lastobj)
         self.onExamineLine=self.doCheckTest
-        
+
     def doCheckVerb(self, line:str):
         if (line=='***finished***'):
             self.onExamineLine=self.doCheckTest
@@ -818,11 +818,12 @@ class TerminalWindow(ScrollText):
         """Find and open a tab for a local edit"""
         re=self.findLocalEdit(name)
         if re:
-            re.setText(text)
+            if re.upload!="##ScratchPad##":
+                re.setText(text)
         else:
             re=self.addTab(name,text,CodeText.MODE_EDIT)
         re.upload=upload
-        re.syntax=(upload.find("@program")>=0)
+        re.syntax=(upload.find("@program")>=0 or upload=="##ScratchPad")
         re.setLabel(upload)
         re.highlight()
         self.pages.select(re)
@@ -933,7 +934,8 @@ class TerminalWindow(ScrollText):
         if upload=="":
             messagebox.showwarning("Send Update","Not in @edit mode")
             return False
-        self.sendCmd(upload)
+        if upload!="##ScratchPad##":
+            self.sendCmd(upload)
         self.sendCmd(text)
         self.after(500,self.sendtext,"Update complete\n")
         e=self.currentTest()

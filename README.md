@@ -66,7 +66,16 @@ A double-click on an error message or stack trace in either the stack or the mai
 * List Properties can be converted to plain text for ease of editing. This will only work with simple lists, and will save as a flattened list of strings.
 * You can add a test command for each property page.
 
+## SCRATCHPAD ##
+**Edit-->Scratchpad** - Opens a scratchpad window, allowing uploading of multiline commands. F5 will send the contents of the scratchpad to the server. Use with care.
+
+## TODO ##
+Scratchpad (for multi line commands)(done)
+File Edit save (?)
+
 ## Release History ##
+0.4.4 - Scratchpad.
+
 0.4.3 - Line numbers and autoindent implemented.
 
 0.4.2 - Selections now show correctly.

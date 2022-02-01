@@ -33,6 +33,9 @@ def doOpen():
             data=f.read()
             tw.openEdit("Local Edit","",data)
 
+def doScratchPad():
+    tw.openEdit("Scratchpad","##ScratchPad##","")
+
 def doClose():
     tw.disconnect()
     tw.saveSettings()
@@ -107,6 +110,7 @@ def buildMenu():
     settingmenu.add_command(label="Server Config",command=doSettings, underline=0)
     editmenu=Menu(menubar,tearoff=0)
     editmenu.add_command(label="Send Update F5", command=doupdate, underline=0)
+    editmenu.add_command(label="Scratchpad", command=doScratchPad,underline=7)
     root.bind("<F5>",doupdate)
     projectmenu=Menu(menubar,tearoff=0)
     projectmenu.add_command(label="New Tab Ctrl+N",command=donewtab,underline=0)
