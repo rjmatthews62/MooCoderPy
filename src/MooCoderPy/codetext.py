@@ -19,6 +19,7 @@ class CodeText(ScrollText):
     mode:int=0
     syntax:bool=True
     upload:str=""
+    linenos:Label=None
 
     KEYWORDLIST=('if','then','else','elseif','for',
            'while','endfor','endwhile','endif',
@@ -37,6 +38,9 @@ class CodeText(ScrollText):
         self.labelvar=StringVar()
         lbl = Label(self,textvariable=self.labelvar,font="Arial 12")
         lbl.pack(side=TOP,fill=X)
+        self.linenosvar=StringVar()
+        self.linenos=Label(self,textvariable=self.linenosvar, font=self.textbox["font"], background="Silver", foreground="Black",width=4,justify=RIGHT)
+        self.linenos.pack(side=LEFT, anchor=NE,padx=0)
         self.textbox.pack(fill=BOTH, expand=True)
         self.bottom = Frame(self, bg="LightGray")
         self.bottom.pack(side=BOTTOM, fill=X)
@@ -67,6 +71,11 @@ class CodeText(ScrollText):
         self.textbox.bind("<Button-2>",self.doPopup) # For Mac, in theory.
         self.textbox.configure(undo=True,exportselection=False,inactiveselectbackground=self.textbox["selectbackground"])
         self.textbox.bind("<Return>",self.handleIndent)
+        self.textbox["yscrollcommand"]=self.handleScroll
+
+    def handleScroll(self,first,last):
+        self.scrollbar.set(first,last)
+        self.updateLineNos()
 
     def handleIndent(self,event:Event):
         line=self.textbox.get("insert linestart","insert lineend")
@@ -74,6 +83,11 @@ class CodeText(ScrollText):
         current_indent = len(match.group(0)) if match else 0
         self.textbox.insert(INSERT,"\n"+(" " * current_indent))
         return "break"
+    
+    def setFontSize(self, newsize: int):
+        super().setFontSize(newsize)
+        if self.linenos:
+            self.linenos.configure(font=self.fontctl)
 
     def buildPopup(self):
         """Make the Popup menu"""
@@ -189,12 +203,19 @@ class CodeText(ScrollText):
         """Update Cursor Location"""
         loc=self.textbox.index(INSERT)
         (x,y)=loc.split(".")
-        s="%4d:%3d" % (int(x)-1,int(y))
+        offset=1 if self.tabtype==CodeText.MODE_CODE else 0
+        s="%4d:%3d" % (int(x)-offset,int(y))
         self.posvar.set(s)
         if (self.lastfind!="" and self.lastfind!=loc):
             self.textbox.tag_remove("found","1.0",END)
         self.bracketMatching()
-    
+
+    def updateLineNos(self):
+        topix=int(self.textbox.index("@0,0").split(".")[0])
+        height=int(self.textbox.winfo_height()/self.fontctl.metrics("linespace"))
+        offset=1 if self.tabtype==CodeText.MODE_CODE else 0
+        self.linenosvar.set("\n".join([str(x+topix-offset) for x in range(height)]))
+
     def bracketMatching(self):
         """Match bracket types"""
         ix=self.textbox.index(INSERT)

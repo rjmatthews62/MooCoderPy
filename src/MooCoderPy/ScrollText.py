@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import font
 from queue import Queue
 from threading import Thread
 import time
@@ -9,6 +10,7 @@ import time
 class ScrollText(tk.Text):
     tabtype=0
     fontsize:int=12
+    fontctl:font.Font=None
 
     def __init__(self, parent, **kwargs):
         tk.Frame.__init__(self,parent)
@@ -19,9 +21,11 @@ class ScrollText(tk.Text):
         self.textbox["yscrollcommand"]=self.scrollbar.set
         self.queue=Queue(20)
         self.bind("<<sendtext>>",self.handletext)
+        self.setFontSize(self.fontsize)
     
     def setFontSize(self,newsize:int):
-        self.textbox.configure(font=("Courier",newsize,"bold"))
+        self.fontctl=font.Font(family="Courier", size=newsize, weight="bold")
+        self.textbox.configure(font=self.fontctl)
         self.fontsize=newsize
 
     def sendtext(self,msg):
