@@ -35,6 +35,8 @@ class CodeText(ScrollText):
     def __init__(self, parent, mode:int, **kwargs):
         super().__init__(parent, **kwargs)
         self.textbox.pack_forget()
+        if self.hscroll:
+            self.hscroll.pack_forget()
         self.labelvar=StringVar()
         lbl = Label(self,textvariable=self.labelvar,font="Arial 12")
         lbl.pack(side=TOP,fill=X)
@@ -44,6 +46,8 @@ class CodeText(ScrollText):
         self.textbox.pack(fill=BOTH, expand=True)
         self.bottom = Frame(self, bg="LightGray")
         self.bottom.pack(side=BOTTOM, fill=X)
+        if self.hscroll:
+            self.hscroll.pack(side=BOTTOM, fill=X)
         self.posvar=StringVar()
         self.posvar.set("000.000")
         poslbl=Label(self.bottom,textvariable=self.posvar)
@@ -450,7 +454,7 @@ class CodeText(ScrollText):
 if __name__=="__main__":
     root=Tk()
     root.title("Test Code Editor")
-    c=CodeText(root,CodeText.MODE_CODE, background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white")
+    c=CodeText(root,CodeText.MODE_CODE, background="black",foreground="white",font=("Courier",12,"bold"),insertbackground="white", nowrap=True)
     c.pack(fill=BOTH,expand=True)
     c.syntax=True
 #    c.setLabel("Testing label")

@@ -11,14 +11,25 @@ class ScrollText(tk.Text):
     tabtype=0
     fontsize:int=12
     fontctl:font.Font=None
+    nowrap:bool=False
+    hscroll:tk.Scrollbar = None
 
     def __init__(self, parent, **kwargs):
         tk.Frame.__init__(self,parent)
+        if "nowrap" in kwargs:
+            self.nowrap=kwargs["nowrap"]
+            del kwargs["nowrap"]
         self.textbox=tk.Text(self,**kwargs)
         self.scrollbar=ttk.Scrollbar(self, orient='vertical', command=self.textbox.yview)
         self.scrollbar.pack(side=tk.RIGHT,fill=tk.Y)
         self.textbox.pack(fill=tk.BOTH,expand=True)
         self.textbox["yscrollcommand"]=self.scrollbar.set
+        if self.nowrap:
+            self.textbox.configure(wrap=tk.NONE)
+            self.hscroll=ttk.Scrollbar(self, orient=tk.HORIZONTAL, command=self.textbox.xview)
+            self.hscroll.pack(side=tk.BOTTOM, fill=tk.X)
+            self.textbox["xscrollcommand"]=self.hscroll.set
+
         self.queue=Queue(20)
         self.bind("<<sendtext>>",self.handletext)
         self.setFontSize(self.fontsize)
