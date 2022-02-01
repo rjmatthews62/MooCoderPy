@@ -18,6 +18,7 @@ Can be installed via pip:
 * **File -> Connect** - Connect to server
 * **File -> Disconnect** - Disconnect from server
 * **File -> Open** - Open a local file in the editor
+* **File -> Save** - Save contents of current window to local file
 
 ### External Editor support: ###
 
@@ -69,11 +70,9 @@ A double-click on an error message or stack trace in either the stack or the mai
 ## SCRATCHPAD ##
 **Edit-->Scratchpad** - Opens a scratchpad window, allowing uploading of multiline commands. F5 will send the contents of the scratchpad to the server. Use with care.
 
-## TODO ##
-Scratchpad (for multi line commands)(done)
-File Edit save (?)
-
 ## Release History ##
+0.4.5 - Save windows to text
+
 0.4.4 - Scratchpad.
 
 0.4.3 - Line numbers and autoindent implemented.

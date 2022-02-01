@@ -21,17 +21,18 @@ import configparser
 tw:TerminalWindow
 lastpage:Widget
 fontsize:int=12
+nb:Notebook
 
 def doOpen():
     tf = filedialog.askopenfilename(
-        initialdir="C:/td/srtmoo/", 
+        #initialdir="C:/td/srtmoo/", 
         title="Open Text file", 
         filetypes=(("MOO source Files", "*.moo"),("Text","*.txt"),("Any","*.*"))
         )
     if tf:
         with open(tf,"r") as f:
             data=f.read()
-            tw.openEdit("Local Edit","",data)
+            tw.openEdit("Local Edit",os.path.abspath(tf),data)
 
 def doScratchPad():
     tw.openEdit("Scratchpad","##ScratchPad##","")
@@ -40,6 +41,25 @@ def doClose():
     tw.disconnect()
     tw.saveSettings()
     root.quit()    
+
+def doSave():
+    global nb
+    page=nb.nametowidget(nb.select())
+    options={"title":"Save to file"}
+    options["filetypes"]=(("MOO source Files", "*.moo"),("Text","*.txt"),("Any","*.*"))
+    options["defaultextension"]=".moo"
+    if isinstance(page,CodeText):
+        if (page.mode==CodeText.MODE_EDIT and page.caption=="Local Edit"):
+            options["initialfile"]=page.upload
+    elif not isinstance(page,TerminalWindow):
+        messagebox.showwarning("MooCoderPy","Can't save this sort of window.")
+        return
+    tf = filedialog.asksaveasfilename(**options)
+    if not tf:
+        return
+    with open(tf,"w") as f:
+        f.write(page.getText())
+    messagebox.showinfo("MooCoderPy","Saved as "+tf)
 
 def doConnect():
     inifile=SettingsDialog.getConfig()
@@ -105,6 +125,7 @@ def buildMenu():
     filemenu.add_command(label="Open", command=doOpen,underline=0)
     filemenu.add_command(label="Connect", command=doConnect,underline=0)
     filemenu.add_command(label="Disconnect", command=doDisconnect, underline=0)
+    filemenu.add_command(label="Save", command=doSave, underline=0)
     filemenu.add_command(label="Exit", command=doClose,underline=1)
     settingmenu=Menu(menubar,tearoff=0)
     settingmenu.add_command(label="Server Config",command=doSettings, underline=0)

@@ -814,7 +814,7 @@ class TerminalWindow(ScrollText):
                     return w
         return None
 
-    def openEdit(self,name:str, upload:str, text:str):
+    def openEdit(self,name:str, upload:str, text:str)->CodeText:
         """Find and open a tab for a local edit"""
         re=self.findLocalEdit(name)
         if re:
@@ -823,10 +823,11 @@ class TerminalWindow(ScrollText):
         else:
             re=self.addTab(name,text,CodeText.MODE_EDIT)
         re.upload=upload
-        re.syntax=(upload.find("@program")>=0 or upload=="##ScratchPad")
+        re.syntax=(upload.find("@program")>=0 or upload=="##ScratchPad" or name=="Local Edit")
         re.setLabel(upload)
         re.highlight()
         self.pages.select(re)
+        return re
         
     def checkName(self,obj:str)->None:
         """Check that we know the name of an object."""
@@ -930,8 +931,8 @@ class TerminalWindow(ScrollText):
         except:
             return("","")
     
-    def doupdate(self,upload,text:str):
-        if upload=="":
+    def doupdate(self,caption:str, upload:str,text:str):
+        if upload=="" or caption=="Local Edit":
             messagebox.showwarning("Send Update","Not in @edit mode")
             return False
         if upload!="##ScratchPad##":
@@ -955,7 +956,7 @@ class TerminalWindow(ScrollText):
         if not(isinstance(page, CodeText)):
             return
         if page.mode==CodeText.MODE_EDIT:
-            self.doupdate(page.upload,page.textbox.get("1.0","end"))
+            self.doupdate(page.caption,page.upload,page.textbox.get("1.0","end"))
         elif page.mode==CodeText.MODE_PROPERTY:
             text=page.getText()
             if len(text)>0 and not(text[0] in "{["): # Not formatted as a list. Treat as list of strings.
