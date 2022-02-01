@@ -726,6 +726,29 @@ class TerminalWindow(ScrollText):
         except:
             pass
 
+    def doRefreshProperty(self,propstr:str)->None:
+        """Reload a property"""
+        try:
+            (obj,prop)=propstr.split(".")
+        except:
+            return
+        self.sendCmd(";"+propstr)
+        self.lastobj=obj
+        self.lastproperty=propstr
+        self.onExamineLine=self.doCheckProperty
+
+    def doCheckProperty(self,line:str):
+        """Examine line for property detail."""
+        if not line.startswith('=> '):
+            self.showmessage(line)
+        else:
+            line=line[3:]
+            self.proplist[self.lastproperty]=line
+            self.updateProperties(False)
+            self.editProp(self.lastproperty)
+            self.checkName(self.lastobj)
+        self.onExamineLine=self.doCheckTest
+        
     def doCheckVerb(self, line:str):
         if (line=='***finished***'):
             self.onExamineLine=self.doCheckTest
@@ -1146,6 +1169,7 @@ class TerminalWindow(ScrollText):
             myedit=self.findPage(propname)
             if not(myedit):
                 myedit=self.addTab(propname,"",CodeText.MODE_PROPERTY)
+            myedit.syntax=True
             myedit.setText(splitlist.splitList2(value))
             myedit.upload=";;"+propname
             myedit.setLabel(myedit.upload)

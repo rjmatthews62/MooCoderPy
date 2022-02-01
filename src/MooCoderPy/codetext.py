@@ -28,9 +28,9 @@ class CodeText(ScrollText):
     COLORLIST=("white","lawn green","cyan","magenta","orange","yellow")
     OPENBRACKETS=("(","{","[")
     CLOSEBRACKETS=(")","}","]")
-    MODE_CODE = 1
-    MODE_EDIT = 2
-    MODE_PROPERTY = 3
+    MODE_CODE = 1 # Code editor, from verb list, syntax highlight.
+    MODE_EDIT = 2 # Local Edit 
+    MODE_PROPERTY = 3 # Property editor (from Proplist)
 
     def __init__(self, parent, mode:int, **kwargs):
         super().__init__(parent, **kwargs)
@@ -173,12 +173,15 @@ class CodeText(ScrollText):
         if not self.tw:
             messagebox.showwarning("MooCoderPy","No Connection to Server")
             return
-        if (self.mode!=self.MODE_CODE):
+        if (self.mode==self.MODE_EDIT):
             if self.upload=="":
                 messagebox.showerror("MooCoderPy","No upload command.")
             else:
                 self.tw.sendCmd("@edit "+self.caption)
-        self.tw.doRefresh(self.caption)
+        elif self.mode==self.MODE_PROPERTY:
+            self.tw.doRefreshProperty(self.caption)
+        else:
+            self.tw.doRefresh(self.caption)
 
     def currentLine(self)->int:
         """Return currently selected line no"""
