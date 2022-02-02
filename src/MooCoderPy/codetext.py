@@ -18,6 +18,7 @@ class CodeText(ScrollText):
     tw=None #Terminal window.
     mode:int=0
     syntax:bool=True
+    syntaxlist=set()
     upload:str=""
     linenos:Label=None
 
@@ -109,7 +110,7 @@ class CodeText(ScrollText):
         p.add_command(label="Redo Last Edit Shift+Ctrl+Z",command=self.redo)
         self.textbox.bind("<Shift-Control-z>",self.redo)
         self.textbox.bind("<Shift-Control-Z>",self.redo)
-        p.add_command(label="Redo Syntax",command=self.highlight,underline=10)
+        p.add_command(label="Redo Syntax",command=lambda: self.highlight(True),underline=10)
         p.add_command(label="Close",command=self.close,underline=0)
         if self.mode==CodeText.MODE_PROPERTY:
             p.add_command(label="Edit as Text",command=self.flattenText,underline=3)
@@ -163,7 +164,7 @@ class CodeText(ScrollText):
         self.textbox.delete("1.0",END)
         self.textbox.insert("1.0",text)
         self.textbox.edit_reset()
-        self.highlight()
+        self.highlight(True)
 
     def doPopup(self,event:Event):
         """Do the actual popup"""
@@ -382,13 +383,17 @@ class CodeText(ScrollText):
         for tag in self.COLORLIST:
             self.textbox.tag_remove(tag,str(startno)+".0",str(endno)+".end")
     
-    def highlight(self):
+    def highlight(self,clear:bool=False):
         """Syntax highlight all visible lines"""
         topline=int(self.textbox.index("@0,0").split(".")[0])
         bottomline=int(self.textbox.index("@0,%d" % self.textbox.winfo_height()).split(".")[0])
-        self.cleartagRegion(topline,bottomline)
+        if clear:
+            self.cleartagRegion(topline,bottomline)
+            self.syntaxlist.clear()
         for i in range(topline,bottomline+1):
-            self.syntaxHighlight(i,False)
+            if not(i in self.syntaxlist):
+                self.syntaxHighlight(i,False)
+                self.syntaxlist.add(i)
         self.trackLocation()
 
     def syntaxHighlight(self, lno:int, clearline:bool=True):
