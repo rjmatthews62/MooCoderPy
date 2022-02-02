@@ -222,7 +222,8 @@ nb=ttk.Notebook(pane)
 pane.add(nb,weight=5)
 mainpack(False)
 
-tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",fontsize,"bold"),insertbackground="white")
+tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",fontsize,"bold"),
+                  insertbackground="white",wrap="word")
 
 tw.normalfont=myfont
 tw.setFontSize(fontsize)
