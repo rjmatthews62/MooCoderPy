@@ -328,12 +328,12 @@ class TerminalWindow(ScrollText):
         super().__init__(parent, **kwargs)
         self.bottom = Frame(self, bg="LightGray")
         self.bottom.pack(side=BOTTOM, fill=X)
-        self.sendbtn = Button(self.bottom, text="Snd", command=self.doSend)
+        self.sendbtn = Button(self.bottom, text="Snd", command=self.doSend, font=self.normalfont)
         self.mytext = StringVar()
         self.sendEntry = Entry(self.bottom, textvariable=self.mytext, font=self.fontctl)
         self.sendbtn.pack(side=RIGHT)
         self.sendEntry.pack(fill=X, expand=True)
-        self.sendEntry.bind("<Return>",self.doSendEvent)
+        self.sendEntry.bind("<Return>",self.doSend)
         self.sendEntry.bind("<Up>", self.history)
         self.sendEntry.bind("<Down>", self.history)
         self.textbox.bind("<Double-Button-1>",self.dblClick)
@@ -393,11 +393,14 @@ class TerminalWindow(ScrollText):
         self.currenttag = tagname
     
     def doRefocus(self,event:Event):
-        self.sendEntry.focus()
-        if (event.char.isprintable()):
+        if len(event.char)>0 and event.char.isprintable():
+            self.sendEntry.focus()
             self.mytext.set(self.mytext.get()+event.char)
             self.sendEntry.icursor(END)
-        return "break"
+            return "break"
+        elif event.keysym=="Return":
+            self.doSend(event)
+            return "break"
 
     def parseVerb(self,value):
         """Return (obj,verb), or False if not valid."""
@@ -989,18 +992,15 @@ class TerminalWindow(ScrollText):
             self.sendCmd(page.textbox.get("1.0","end"))
             self.onExamineLine=self.doCheckCompile
 
-    def doSend(self):
+    def doSend(self,event:Event=None):
         s = self.mytext.get()
-        print("Send:", s)
         self.mytext.set("")
         if self.socket != None:
             self.socket.send((s + "\n").encode("utf-8"))
             self.historylst.insert(0,s)
             self.historyidx=-1
+        self.sendEntry.focus()
 
-    def doSendEvent(self,event):
-        self.doSend()
-        
     def doConnect(self, server, port):
         self.disconnect()
         self.sendtext("Connecting to %s %d\n" % (server,port))
