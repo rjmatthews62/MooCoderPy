@@ -534,7 +534,7 @@ class TerminalWindow(ScrollText):
             self.isesc = False
             self.iscsi = False
             self.currentparam = ""
-            if self.capturemode!=1:
+            if self.capturemode!=1 and c!="\r":
                 self.output+=c
         if (c=="\n"):
             self.processLine()

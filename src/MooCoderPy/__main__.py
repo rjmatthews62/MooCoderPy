@@ -7,6 +7,7 @@ from tkinter import font
 from tkinter import scrolledtext
 from tkinter import simpledialog
 import os,sys
+import re
 
 # Stupid packaging messes with paths...
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

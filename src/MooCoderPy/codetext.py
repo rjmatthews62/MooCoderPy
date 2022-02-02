@@ -222,6 +222,7 @@ class CodeText(ScrollText):
         height=int(self.textbox.winfo_height()/self.fontctl.metrics("linespace"))
         offset=1 if self.tabtype==CodeText.MODE_CODE else 0
         self.linenosvar.set("\n".join([str(x+topix-offset) for x in range(height)]))
+        self.highlight()
 
     def bracketMatching(self):
         """Match bracket types"""
@@ -376,13 +377,21 @@ class CodeText(ScrollText):
         for tag in self.COLORLIST:
             self.textbox.tag_remove(tag,str(lno)+".0",str(lno)+".end")
     
+    def cleartagRegion(self,startno,endno:int):
+        """Remove tags from multiple lines"""
+        for tag in self.COLORLIST:
+            self.textbox.tag_remove(tag,str(startno)+".0",str(endno)+".end")
+    
     def highlight(self):
-        """Syntax highlight all lines"""
-        for i in range(1,self.lastLine()+1):
-            self.syntaxHighlight(i)
+        """Syntax highlight all visible lines"""
+        topline=int(self.textbox.index("@0,0").split(".")[0])
+        bottomline=int(self.textbox.index("@0,%d" % self.textbox.winfo_height()).split(".")[0])
+        self.cleartagRegion(topline,bottomline)
+        for i in range(topline,bottomline+1):
+            self.syntaxHighlight(i,False)
         self.trackLocation()
 
-    def syntaxHighlight(self, lno:int):
+    def syntaxHighlight(self, lno:int, clearline:bool=True):
         line=""
         x:int=0
         
@@ -402,7 +411,8 @@ class CodeText(ScrollText):
         
         if (lno>=self.lastLine()) or (lno<1):
               return
-        self.cleartags(lno)
+        if clearline:              
+            self.cleartags(lno)
         if not(self.syntax): return
         if lno==0 and self.mode==self.MODE_CODE: return # Leave programming line alone.
         line=self.getLine(lno)
