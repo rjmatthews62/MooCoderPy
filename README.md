@@ -7,6 +7,8 @@ It supports syntax highlighting, jump to error location and a stack trace window
 
 This should run on Python 3.6 (or better) and uses the tkinter with no external dependencies.
 
+This requires a desktop environment: Linux running X11 (if it has a Desktop it's running X11), Window, MacOS should all work.
+
 The original Delphi implementation can be found at https://github.com/rjmatthews62/MooCoder
 
 ## Installation ##
