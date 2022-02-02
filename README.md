@@ -71,7 +71,7 @@ A double-click on an error message or stack trace in either the stack or the mai
 **Edit-->Scratchpad** - Opens a scratchpad window, allowing uploading of multiline commands. F5 will send the contents of the scratchpad to the server. Use with care.
 
 ## Release History ##
-0.4.7 - Solved issue with word wrap and double lines
+0.4.8 - Solved issue with word wrap and double lines, fixed command history issue.
 
 0.4.6 - Set edit windows to be non-wrapping
 

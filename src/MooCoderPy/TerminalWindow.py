@@ -312,7 +312,6 @@ class TerminalWindow(ScrollText):
     )
 
     def history(self,event):
-        print("Event: ",event)
         if event.keysym=="Up":
             self.historyidx+=1
             if self.historyidx>=len(self.historylst):
@@ -367,6 +366,7 @@ class TerminalWindow(ScrollText):
             for (key,value) in ifile.items("history"):
                 if key.isnumeric():
                     self.historylst.append(value)
+            self.historyidx=-1
 
     def dblClick(self,event:Event):
         """Respond to double click"""
@@ -982,7 +982,7 @@ class TerminalWindow(ScrollText):
         if self.socket != None:
             self.socket.send((s + "\n").encode("utf-8"))
             self.historylst.insert(0,s)
-            self.historyidx=0
+            self.historyidx=-1
 
     def doSendEvent(self,event):
         self.doSend()
