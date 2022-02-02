@@ -223,14 +223,13 @@ pane.add(nb,weight=5)
 mainpack(False)
 
 tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",fontsize,"bold"),
-                  insertbackground="white",wrap="word")
+                  insertbackground="white",wrap="word",takefocus=False)
 
 tw.normalfont=myfont
 tw.setFontSize(fontsize)
 tw.setstackvisible=mainpack
 tw.stack=stack
 nb.add(tw,text="Terminal")
-
 verbframe=Frame(nb)
 nb.add(verbframe,text="Verbs")
 lastpage=verbframe

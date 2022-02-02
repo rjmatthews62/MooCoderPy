@@ -31,6 +31,7 @@ class TerminalWindow(ScrollText):
     testtab:str=""
     lastlno:int=0
     lastproperty:str=""
+    sendEntry:Entry = None
 
     ColorTable = (
         "#000000",
@@ -329,7 +330,7 @@ class TerminalWindow(ScrollText):
         self.bottom.pack(side=BOTTOM, fill=X)
         self.sendbtn = Button(self.bottom, text="Snd", command=self.doSend)
         self.mytext = StringVar()
-        self.sendEntry = Entry(self.bottom, textvariable=self.mytext)
+        self.sendEntry = Entry(self.bottom, textvariable=self.mytext, font=self.fontctl)
         self.sendbtn.pack(side=RIGHT)
         self.sendEntry.pack(fill=X, expand=True)
         self.sendEntry.bind("<Return>",self.doSendEvent)
@@ -337,7 +338,7 @@ class TerminalWindow(ScrollText):
         self.sendEntry.bind("<Down>", self.history)
         self.textbox.bind("<Double-Button-1>",self.dblClick)
         self.textbox.configure(exportselection=False,inactiveselectbackground=self.textbox["selectbackground"])
-
+        self.textbox.bind("<KeyPress>",self.doRefocus)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.iscsi = False
@@ -368,6 +369,12 @@ class TerminalWindow(ScrollText):
                     self.historylst.append(value)
             self.historyidx=-1
 
+    def setFontSize(self,newsize:int):
+        super().setFontSize(newsize)
+        if self.sendEntry:
+            self.sendEntry.configure(font=self.fontctl)
+
+
     def dblClick(self,event:Event):
         """Respond to double click"""
         self.gotoError(self.textbox)
@@ -385,6 +392,13 @@ class TerminalWindow(ScrollText):
             self.textbox.tag_raise(SEL) # Make sure selection overrides.
         self.currenttag = tagname
     
+    def doRefocus(self,event:Event):
+        self.sendEntry.focus()
+        if (event.char.isprintable()):
+            self.mytext.set(self.mytext.get()+event.char)
+            self.sendEntry.icursor(END)
+        return "break"
+
     def parseVerb(self,value):
         """Return (obj,verb), or False if not valid."""
         if value.startswith('@'):
