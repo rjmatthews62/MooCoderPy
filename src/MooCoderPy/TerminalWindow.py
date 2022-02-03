@@ -803,7 +803,7 @@ class TerminalWindow(ScrollText):
                     re.mark_set(INSERT,lastix)
                     re.see(lastix)
                 try:
-                    self.currentPage().highlight()
+                    self.currentPage().highlight(True)
                 except:
                     pass
             else:

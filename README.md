@@ -73,6 +73,8 @@ A double-click on an error message or stack trace in either the stack or the mai
 **Edit-->Scratchpad** - Opens a scratchpad window, allowing uploading of multiline commands. F5 will send the contents of the scratchpad to the server. Use with care.
 
 ## Release History ##
+0.5.0 - Fixed issue with shortcut keys going to wrong window. Tided up highlighting on refresh.
+
 0.4.9 - Force focus to command line in Terminal Window.
 
 0.4.8 - Solved issue with word wrap and double lines, fixed command history issue, improved syntax highlight performance.

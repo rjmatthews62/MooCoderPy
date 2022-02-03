@@ -62,14 +62,16 @@ class CodeText(ScrollText):
         self.textbox.bind("<ButtonRelease>",self.trackLocation)
         self.textbox.bind("<KeyRelease>",self.trackLocation)
         self.textbox.bind("<Enter>",self.trackLocation)
-        self.bind_all("<Control-Key-G>",self.gotoLine)
-        self.bind_all("<Control-Key-g>",self.gotoLine)
-        self.textbox.bind_all("<<Modified>>",self.modified)
-        self.bind_all("<Control-Key-F>",self.find)
-        self.bind_all("<Control-Key-f>",self.find)
-        self.bind_all("<Control-Key-R>",self.refresh)
-        self.bind_all("<Control-Key-r>",self.refresh)
-        self.bind_all("<F3>",self.findAgain)
+        self.textbox.bind("<Control-Key-G>",self.gotoLine)
+        self.textbox.bind("<Control-Key-g>",self.gotoLine)
+        self.textbox.bind("<<Modified>>",self.modified)
+        self.textbox.bind("<Control-Key-F>",self.find)
+        self.textbox.bind("<Control-Key-f>",self.find)
+        self.textbox.bind("<Control-Key-R>",self.refresh)
+        self.textbox.bind("<Control-Key-r>",self.refresh)
+        self.textbox.bind("<F3>",self.findAgain)
+        self.textbox.bind("<<Paste>>",self.cutPaste)
+        self.textbox.bind("<<Cut>>",self.cutPaste)
         self.mode=mode
         self.buildPopup()
         self.textbox.bind("<Button-3>",self.doPopup)
@@ -93,6 +95,10 @@ class CodeText(ScrollText):
         super().setFontSize(newsize)
         if self.linenos:
             self.linenos.configure(font=self.fontctl)
+
+    def cutPaste(self,event:Event):
+        """Trigger highlight on cut and paste."""
+        self.textbox.after(0,self.highlight,True)
 
     def buildPopup(self):
         """Make the Popup menu"""
@@ -187,6 +193,7 @@ class CodeText(ScrollText):
             self.tw.doRefreshProperty(self.caption)
         else:
             self.tw.doRefresh(self.caption)
+        return "break"
 
     def currentLine(self)->int:
         """Return currently selected line no"""
@@ -390,6 +397,7 @@ class CodeText(ScrollText):
         if clear:
             self.cleartagRegion(topline,bottomline)
             self.syntaxlist.clear()
+            self.textbox.edit_modified(False)
         for i in range(topline,bottomline+1):
             if not(i in self.syntaxlist):
                 self.syntaxHighlight(i,False)
