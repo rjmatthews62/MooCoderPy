@@ -56,6 +56,7 @@ class ScrollText(tk.Text):
             self.addtext(msg)
             self.queue.task_done()
         self.flush()
+        self.textbox.see("end")
     
     def flush(self):
         pass

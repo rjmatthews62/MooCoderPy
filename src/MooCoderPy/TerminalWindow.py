@@ -32,6 +32,7 @@ class TerminalWindow(ScrollText):
     lastlno:int=0
     lastproperty:str=""
     sendEntry:Entry = None
+    filterLines:bool=False
 
     ColorTable = (
         "#000000",
@@ -385,8 +386,6 @@ class TerminalWindow(ScrollText):
             self.flush()
         if not (tagname in self.taglist):
             cfg = {"background": self.mycolor, "foreground": self.myfontcolor}
-#            if (self.mycolor=="#000000" or self.mycolor=="black"):
-#                del cfg["background"]
             self.textbox.tag_config(tagname, cfg)
             self.taglist.append(tagname)
             self.textbox.tag_raise(SEL) # Make sure selection overrides.
@@ -418,6 +417,7 @@ class TerminalWindow(ScrollText):
         return False
 
     def addtext(self, msg):
+        # print("Reading ",len(msg))
         for c in msg:
             self.addchar(c)
         self.textbox.see("end")
@@ -429,7 +429,7 @@ class TerminalWindow(ScrollText):
         if self.output!="":
             self.textbox.insert("end",self.output,self.currenttag)
             self.output=""
-            self.textbox.see("end")
+        #    self.textbox.see("end")
 
     def saveSettings(self):
         ifile=SettingsDialog.getConfig()
@@ -551,13 +551,23 @@ class TerminalWindow(ScrollText):
             self.isesc = False
             self.iscsi = False
             self.currentparam = ""
-            if self.capturemode!=1 and c!="\r":
+            if (self.capturemode!=1 and not self.filterLines) and c!="\r":
                 self.output+=c
         if (c=="\n"):
             self.processLine()
+            if self.filterLines and not self.lastline.startswith("Seconds"):
+                self.addln(self.lastline)
             self.lastline=""
+            self.checkLength()
         elif c!="\r":
             self.lastline+=c
+
+    def checkLength(self):
+        """Stop window growing forever"""
+        start=self.textbox.index("end -10000lines")
+        if (start!="1.0"):
+            self.textbox.delete("1.0","end -9000lines")
+            # print("Trimming ",start)
 
     def processLine(self):
         if self.capturemode==0:
@@ -1068,7 +1078,7 @@ class TerminalWindow(ScrollText):
                     print("Exception found.")
                     break
                 if self.socket in readlist:
-                    b = self.socket.recv(2048)
+                    b = self.socket.recv(4096)
                     if len(b)==0: # Socket probably closed.
                         self.sendtext("\nDisconnected\n")
                         break
