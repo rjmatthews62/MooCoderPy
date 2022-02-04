@@ -6,8 +6,7 @@ from tkinter import ttk
 from tkinter import font
 from tkinter import scrolledtext
 from tkinter import simpledialog
-import os,sys
-import re
+import os,sys,re,webbrowser
 
 # Stupid packaging messes with paths...
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -120,6 +119,9 @@ def togglePage(event:Event=None):
     else:
         nb.select(tw)
 
+def doHelp(event:Event=None):
+    webbrowser.open("https://github.com/rjmatthews62/MooCoderPy#readme")
+
 def buildMenu():
     menubar=Menu(root)
     filemenu=Menu(menubar,tearoff=0)
@@ -152,6 +154,8 @@ def buildMenu():
     viewmenu=Menu(menubar,tearoff=0)
     viewmenu.add_command(label="Stack", command=viewStack,underline=0)
     viewmenu.add_command(label="Toggle View Ctrl+Shift+T", command=togglePage, underline=0)
+    viewmenu.add_command(label="Help",command=doHelp)
+    root.bind("<F1>",doHelp)
     root.bind("<Control-Shift-Key-T>",togglePage)
     root.bind("<Control-Shift-Key-t>",togglePage)
     menubar.add_cascade(label="View",menu=viewmenu,underline=0)

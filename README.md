@@ -82,7 +82,7 @@ Standard editing key functions should all work as expected.
 * Standard Tk key binds are here: https://www.tcl.tk/man/tcl8.4/TkCmd/text.html#M152
 
 ## Release History ##
-0.5.2 - List sort and find implemented.
+0.5.3 - List sort and find implemented, link to Help page.
 
 0.5.1 - Perfomance improvments in terminal window.
 
