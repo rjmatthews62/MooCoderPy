@@ -40,7 +40,7 @@ def getConfigFile():
     return os.path.expanduser("~/moocoderpy.ini")
 
 def getConfig():
-    inifile=configparser.ConfigParser()
+    inifile=configparser.RawConfigParser()
     inifile.read(getConfigFile())
     if not inifile.has_section("settings"):
         inifile.add_section("settings")
