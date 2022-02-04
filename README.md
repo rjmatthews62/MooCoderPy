@@ -31,7 +31,7 @@ Each edited item will have its own tab, and you can use the test line as for the
 **Project->New Tab (Ctrl+N)** - Loads a verb into its own tab. Press F5 to compile.
 
 **Project->Get Verbs (Ctrl+Shift+V)** - Load all the verbs for an object into the verbs window.
-    You can double click in the Verbs pane to edit that verb.
+    You can double click or hit Enter in the Verbs pane to edit that verb.
 
 **Project->Clear Project** - Close all code windows and clear verb list
 
@@ -66,7 +66,7 @@ A double-click on an error message or stack trace in either the stack or the mai
 
 ## Property Editing ##
 **Project-->Get Properties** Will load all the properties of an object into the "Properties" tab.
-* Double clicking will allow editing of the property.
+* Double clicking or Enter will allow editing of the property.
 * Simple types (String, Int, Float, Object) will be edited in a popup window. 
 * More complicated types (Map, List) are edited in an edit window. The lists and maps are split into lines for ease of reading and editing. The extra lines will be removed on update.
 * Use  F5 to write the update back to the server.
