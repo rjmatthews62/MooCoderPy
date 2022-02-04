@@ -154,7 +154,7 @@ def buildMenu():
     viewmenu=Menu(menubar,tearoff=0)
     viewmenu.add_command(label="Stack", command=viewStack,underline=0)
     viewmenu.add_command(label="Toggle View Ctrl+Shift+T", command=togglePage, underline=0)
-    viewmenu.add_command(label="Help",command=doHelp)
+    viewmenu.add_command(label="Help F1",command=doHelp)
     root.bind("<F1>",doHelp)
     root.bind("<Control-Shift-Key-T>",togglePage)
     root.bind("<Control-Shift-Key-t>",togglePage)

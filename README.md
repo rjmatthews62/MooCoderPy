@@ -37,6 +37,10 @@ Each edited item will have its own tab, and you can use the test line as for the
 
 **View->Toggle View Ctrl+Shift+T** - Toggle between terminal and previous edit view.
 
+**View->Stack** - Toggle Stack Pane
+
+**View->Help F1** - Opens this README file in browser
+
 Basic error checking and stack trace implemented.
 
 Syntax Highlighting implemented.
