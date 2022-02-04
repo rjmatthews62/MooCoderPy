@@ -33,6 +33,8 @@ Each edited item will have its own tab, and you can use the test line as for the
 **Project->Get Verbs (Ctrl+Shift+V)** - Load all the verbs for an object into the verbs window.
     You can double click or hit Enter in the Verbs pane to edit that verb.
 
+**Project->Get Verbs and Properties** - Load both Verbs and Properties in one operation.
+
 **Project->Clear Project** - Close all code windows and clear verb list
 
 **View->Toggle View Ctrl+Shift+T** - Toggle between terminal and previous edit view.
@@ -86,6 +88,8 @@ Standard editing key functions should all work as expected.
 * Standard Tk key binds are here: https://www.tcl.tk/man/tcl8.4/TkCmd/text.html#M152
 
 ## Release History ##
+0.5.5 - Project Get Verbs and Properties in one command.
+
 0.5.4 - Fixed an issue with '%' in saving history
 
 0.5.3 - List sort and find implemented, link to Help page.

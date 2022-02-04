@@ -33,6 +33,7 @@ class TerminalWindow(ScrollText):
     lastproperty:str=""
     sendEntry:Entry = None
     filterLines:bool=False
+    doboth:bool=False
 
     ColorTable = (
         "#000000",
@@ -1098,13 +1099,23 @@ class TerminalWindow(ScrollText):
             self.dumpobject=s
             self.sendCmd('@verbs '+self.dumpobject)
             self.onExamineLine=self.doCheckVerbs
+            self.doboth=False
+
 
     def getProperties(self,event:Event=None):
-        s=simpledialog.askstring('Prpperties','Load Property list for object:', initialvalue=self.dumpobject)
+        s=simpledialog.askstring('Properties','Load Property list for object:', initialvalue=self.dumpobject)
         if (s):
             self.dumpobject=s
             self.sendCmd('@dump '+self.dumpobject+" with noverbs")
             self.onExamineLine=self.doCheckProperties
+    
+    def getBoth(self,event:Event=None):
+        s=simpledialog.askstring('Verbs and Properties','Load Verb and Property list for object:', initialvalue=self.dumpobject)
+        if (s):
+            self.dumpobject=s
+            self.sendCmd('@verbs '+self.dumpobject)
+            self.doboth=True
+            self.onExamineLine=self.doCheckVerbs
 
     def doCheckProperties(self,line:str):
         # ;;#151.("rank_chart") = {"-", "F", "D", "C", "B", "A", "S", "SS", "SSS", "SSSS", "SSSSS"}
@@ -1143,6 +1154,11 @@ class TerminalWindow(ScrollText):
         self.checkName(obj)
         self.updateVerbs()
         self.pages.select(self.lvVerbs.winfo_parent())
+        if self.doboth:
+            self.doboth=False
+            self.sendCmd('@dump '+self.dumpobject+" with noverbs")
+            self.onExamineLine=self.doCheckProperties
+
     
     def clearProject(self):
         """Close all open tabs and clear verb list"""

@@ -7,16 +7,21 @@ from tkinter import font
 from tkinter import scrolledtext
 from tkinter import simpledialog
 import os,sys,re,webbrowser
-
 # Stupid packaging messes with paths...
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 print("SCRIPT_DIR=",SCRIPT_DIR)
-sys.path.append(SCRIPT_DIR)
+if not(SCRIPT_DIR in sys.path):
+    sys.path.append(SCRIPT_DIR)
+try:
+    import MooCoderPy # This just picks up the version no.
+    __VERSION__=MooCoderPy.__VERSION__
+except:
+    pass
 
 from ScrollText import *
 from TerminalWindow import *
 import SettingsDialog
-import configparser
+
 
 tw:TerminalWindow
 lastpage:Widget
@@ -68,6 +73,7 @@ def doConnect():
     (server,port)=server.split(":")
     tw.connectString=connectstr
     tw.doConnect(server,int(port))
+    nb.select(tw)
 
 def doDisconnect():
     tw.disconnect()
@@ -140,6 +146,7 @@ def buildMenu():
     projectmenu.add_command(label="New Tab Ctrl+N",command=donewtab,underline=0)
     projectmenu.add_command(label="Get Verbs Ctrl+Shift+V",command=tw.getVerbs,underline=0)
     projectmenu.add_command(label="Get Properties",command=tw.getProperties,underline=4)
+    projectmenu.add_command(label="Get Verbs and Properties",command=tw.getBoth,underline=7)
     projectmenu.add_command(label="Clear Project",command=tw.clearProject,underline=0)
     
     root.bind("<Control-Shift-Key-V>",tw.getVerbs)
@@ -276,13 +283,8 @@ def doBindList(tv:ttk.Treeview):
     tv.bind("<Control-f>",treeview_find)
     tv.bind("<F3>",treeview_findagain)
 
-
 if not("__VERSION__" in globals()):
-    import importlib.metadata
-    try:
-        __VERSION__ = importlib.metadata.version('MooCoderPy-rjmatthews62')
-    except:
-        __VERSION__ = "code only"
+    __VERSION__ = "code only"
 
 print("MooCoderPy",__VERSION__)
 root = Tk()

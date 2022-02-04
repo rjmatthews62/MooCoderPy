@@ -24,7 +24,7 @@ class CodeText(ScrollText):
 
     KEYWORDLIST=('if','then','else','elseif','for',
            'while','endfor','endwhile','endif',
-           'try','except','endtry','break','continue','in')
+           'try','except','endtry','break','continue','in','fork','endfork')
     
     COLORLIST=("white","lawn green","cyan","magenta","orange","yellow")
     OPENBRACKETS=("(","{","[")
