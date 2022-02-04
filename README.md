@@ -72,7 +72,18 @@ A double-click on an error message or stack trace in either the stack or the mai
 ## SCRATCHPAD ##
 **Edit-->Scratchpad** - Opens a scratchpad window, allowing uploading of multiline commands. F5 will send the contents of the scratchpad to the server. Use with care.
 
+## List Navigation ##
+* Property and Verb lists can be sorted by column, by clicking on the column header
+* Ctrl+F and F3 work in lists for find and find again.
+
+## Editing Shortcuts ##
+Standard editing key functions should all work as expected.
+* Ctrl+/ can be used for select all.
+* Standard Tk key binds are here: https://www.tcl.tk/man/tcl8.4/TkCmd/text.html#M152
+
 ## Release History ##
+0.5.2 - List sort and find implemented.
+
 0.5.1 - Perfomance improvments in terminal window.
 
 0.5.0 - Fixed issue with shortcut keys going to wrong window. Tided up highlighting on refresh.

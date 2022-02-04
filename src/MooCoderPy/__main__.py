@@ -180,14 +180,98 @@ def getInitalSettings():
 
 def doVerbDblClick(event=None):
     nd=verblist.item(verblist.selection())
-    tw.loadVerb(nd["text"]+":"+nd["values"][1])
+    if nd["text"]:
+        tw.loadVerb(nd["text"]+":"+nd["values"][1])
 
 def doPropDblClick(event=None):
     nd=proplist.item(proplist.selection())
-    tw.editProp(nd["text"]+"."+nd["values"][1])
+    if nd["text"]:
+        tw.editProp(nd["text"]+"."+nd["values"][1])
 
 def doStackClick(event:Event):
     tw.gotoError(stack)
+
+def treeview_find(event:Event):
+    findReplaceSettings.isreplace=False
+    FindReplaceDialog(event.widget,"Search List")
+    if findReplaceSettings.go:
+        if not treeview_dofind(event.widget,False):
+            treeview_findloop(event.widget)
+
+
+def treeview_findloop(tv:ttk.Treeview):
+    """Loop around if not found."""
+    items=tv.get_children("")
+    if len(items)<1: return
+    if findReplaceSettings.backward:
+        tv.selection_set(items[-1])
+    else:
+        tv.selection_set(items[0])
+    treeview_dofind(tv,False)
+
+def treeview_findagain(event:Event):
+    if not findReplaceSettings.search:
+        treeview_find(event)
+    else:
+        if not treeview_dofind(event.widget,True):
+            treeview_findloop(event.widget)
+
+def treeview_dofind(tv:ttk.Treeview,again:bool):
+    items=tv.get_children("")
+    ix=tv.index(tv.selection())
+    if again:
+        ix=ix-1 if findReplaceSettings.backward else ix+1
+    cs=findReplaceSettings.caseSensitive
+    search=findReplaceSettings.search
+    search=search if cs else search.lower()
+    if findReplaceSettings.wordmatch:
+        wm=re.compile(r"\b"+search+r"\b")
+    if findReplaceSettings.backward:
+        items=list(items[0:ix])
+        items.reverse()
+    else:
+        items=items[ix:]
+            
+    for item in items:
+        v=tv.item(item)
+        for vv in v["values"]:
+            vv=str(vv) if cs else str(vv).lower()
+            if findReplaceSettings.wordmatch:
+                found=wm.search(vv)
+            else:
+                found=search in vv
+            if found:
+                tv.selection_set(item)
+                tv.focus(item)
+                tv.see(item)
+                return True
+    return False
+
+def treeview_sort_column(tv, col, reverse,ix=-1):
+    if col=="#0":
+        l = [(tv.item(k, "text"), k) for k in tv.get_children('')]
+        l.sort(key=lambda x:int(x[0][1:]),reverse=reverse)
+    else:
+        l = [(tv.set(k, col), k) for k in tv.get_children('')]
+        l.sort(reverse=reverse)
+
+    # rearrange items in sorted positions
+    for index, (val, k) in enumerate(l):
+        tv.move(k, '', index)
+
+    # reverse sort next time
+    reverse=not reverse
+    tv.heading(col, command=lambda: \
+               treeview_sort_column(tv, col, reverse))
+
+def doBindList(tv:ttk.Treeview):
+    """Setup up sort and find on a listbox."""
+    for col in ["#0"]+list(tv.cget("columns")):
+        tv.heading(col, command=lambda c=col:treeview_sort_column(tv, c, False,i))
+    tv.bind("<Control-F>",treeview_find)
+    tv.bind("<Control-f>",treeview_find)
+    tv.bind("<F3>",treeview_findagain)
+
 
 if not("__VERSION__" in globals()):
     import importlib.metadata
@@ -244,9 +328,11 @@ for i in range(3):
     verblist.column(i,stretch=False,width=80)
 verblist.pack(fill=BOTH, expand=True)
 verblist.bind("<Double-Button-1>",doVerbDblClick)
+verblist.bind("<Return>",doVerbDblClick)
 verblist.style=ttk.Style(verblist)
 verblist.style.configure("Treeview",font=myfont)
 verblist.style.configure("Treeview.Heading",font=myfont)
+doBindList(verblist)
 
 propframe=Frame(nb)
 nb.add(propframe,text="Properties")
@@ -263,6 +349,8 @@ proplist.column(0,stretch=False,width=50)
 proplist.column(1,stretch=False,width=50)
 tw.fitListContents(proplist)
 proplist.bind("<Double-Button-1>",doPropDblClick)
+doBindList(proplist)
+proplist.bind("<Return>",doPropDblClick)
 
 nb.enable_traversal()
 tw.lvVerbs=verblist
