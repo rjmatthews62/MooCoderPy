@@ -34,7 +34,7 @@ Each edited item will have its own tab, and you can use the test line as for the
 **Project->Get Verbs (Ctrl+Shift+V)** - Load all the verbs for an object into the verbs window.
     You can double click or hit Enter in the Verbs pane to edit that verb.
 
-**Project->Get Verbs and Properties** - Load both Verbs and Properties in one operation.
+**Project->Get Verbs and Properties** - Load both Verbs and [Properties](#properties) in one operation.
 
 **Project->Clear Project** - Close all code windows and clear verb list
 
@@ -67,7 +67,7 @@ Right-Click in code window will bring up a context menu.
 
 A double-click on an error message or stack trace in either the stack or the main terminal window will go the the relevent source code.
 
-## Property Editing ##
+## Property Editing ## {#properties}
 **Project-->Get Properties** Will load all the properties of an object into the "Properties" tab.
 * Double clicking or Enter will allow editing of the property.
 * Simple types (String, Int, Float, Object) will be edited in a popup window. 
