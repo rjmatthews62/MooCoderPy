@@ -13,8 +13,9 @@ The original Delphi implementation can be found at https://github.com/rjmatthews
 
 ## Installation ##
 Can be installed via pip:
-* pip install moocoderpy-rjmatthews62
-* python -m MooCoderPy
+* pip install --upgrade moocoderpy-rjmatthews62
+* python -m MooCoderPy 
+
 ## Setup ##
 * **Settings -> Server Config** : set server address (and port). You can also set font size. 
 * **File -> Connect** - Connect to server
