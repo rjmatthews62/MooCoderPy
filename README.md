@@ -16,6 +16,11 @@ Can be installed via pip:
 * pip install --upgrade moocoderpy-rjmatthews62
 * python -m MooCoderPy 
 
+### Python3 Notes ###
+* Ubuntu
+    *  For reasons that are not clear, the default Python3 install on Ubuntu is quite minimalist.  Tk and pip are in separate packages, so the minumum python3 install becoms:
+    *  `sudo apt install python3 python3-tk python3-pip`
+
 ## Setup ##
 * **Settings -> Server Config** : set server address (and port). You can also set font size. 
 * **File -> Connect** - Connect to server
