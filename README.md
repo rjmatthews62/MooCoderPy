@@ -18,7 +18,7 @@ Can be installed via pip:
 
 ### Python3 Notes ###
 * Ubuntu
-    *  For reasons that are not clear, the default Python3 install on Ubuntu is quite minimalist.  Tk and pip are in separate packages, so the minumum python3 install becoms:
+    *  For reasons that are not clear, the default Python3 install on Ubuntu is quite minimalist.  Tk and pip are in separate packages, so the minimum python3 install becoms:
     *  `sudo apt install python3 python3-tk python3-pip`
 
 ## Setup ##
