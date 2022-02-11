@@ -8,7 +8,7 @@ import socket, threading,select
 import SettingsDialog
 from codetext import *
 from wgplib import *
-import re
+import re,os
 import mydialogs
 import splitlist
 
@@ -34,6 +34,7 @@ class TerminalWindow(ScrollText):
     sendEntry:Entry = None
     filterLines:bool=False
     doboth:bool=False
+    imgList={}
 
     ColorTable = (
         "#000000",
@@ -364,6 +365,7 @@ class TerminalWindow(ScrollText):
         self.upload=""
         self.historylst=[]
         self.historyidx=0
+        self.loadIcons()
         ifile=SettingsDialog.getConfig()
         if ifile.has_section("history"):
             for (key,value) in ifile.items("history"):
@@ -738,7 +740,18 @@ class TerminalWindow(ScrollText):
     def addTab(self,caption:str,text:str,tabtype:int):
         t=CodeText(self.pages,tabtype,background="black",foreground="white",font=("Courier",self.fontsize,"bold"),
                    insertbackground="white",nowrap=True)
-        self.pages.add(t,text=caption)
+        if tabtype==CodeText.MODE_CODE:
+            img=self.imgList["verb"]
+        elif tabtype==CodeText.MODE_PROPERTY:
+            img=self.imgList["property"]
+        else:
+            if caption=="Scratchpad":
+                img=self.imgList["scratchpad"]
+            elif caption=="Local Edit":
+                img=self.imgList["file"]
+            else:
+                img=self.imgList["edit"]
+        self.pages.add(t,text=caption,compound=TOP,image=img)
         t.tw=self
         t.setText(text)
         t.caption=caption
@@ -1176,6 +1189,16 @@ class TerminalWindow(ScrollText):
             self.updateVerbs()
             self.updateProperties()
             self.pages.select(self)
+
+    def loadIcons(self):
+        self.imgfolder=os.path.dirname(os.path.abspath(__file__))+"/img"
+        self.imgList={}
+        imagemap = [("terminal", "monitor"), ("verblist", "code"), ("verb", "inspect-code"), ("proplist", "edit-property"),
+                    ("property", "new-property"),
+                    ("scratchpad", "spiral-bound-booklet"), ("edit", "edit"),
+                    ("file", "document")]
+        for (name, image) in imagemap:
+            self.imgList[name]=PhotoImage(file=self.imgfolder+"/icons8-"+image+"-24.png")
 
     def gotoError(self,text:Text):
         line=text.get(INSERT+" linestart",INSERT+" lineend").strip()

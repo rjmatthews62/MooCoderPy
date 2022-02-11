@@ -298,7 +298,7 @@ except:
     except:
         print("Didn't need that dumb icon anyway.")
 
-myfont=font.Font(name="Arial",size=10)
+myfont=font.Font(family="Arial",size=10)
 getInitalSettings()
 root.option_add( "*font", myfont)
 root.title("MooCoderPy "+__VERSION__)
@@ -310,6 +310,8 @@ stack=Text(pane,width=50)
 stack.bind("<Double-Button-1>",doStackClick)
 nb=ttk.Notebook(pane)
 pane.add(nb,weight=5)
+nb.style=ttk.Style(root)
+nb.style.configure("TNotebook.Tab",font=myfont)
 mainpack(False)
 
 tw=TerminalWindow(nb,background="black",foreground="white",font=("Courier",fontsize,"bold"),
@@ -319,9 +321,9 @@ tw.normalfont=myfont
 tw.setFontSize(fontsize)
 tw.setstackvisible=mainpack
 tw.stack=stack
-nb.add(tw,text="Terminal")
+nb.add(tw,text="Terminal",compound=TOP,image=tw.imgList["terminal"])
 verbframe=Frame(nb)
-nb.add(verbframe,text="Verbs")
+nb.add(verbframe,text="Verbs",compound=TOP,image=tw.imgList["verblist"])
 lastpage=verbframe
 verblist=ttk.Treeview(verbframe,columns=("c1","c2","c3","c4"))
 verblist.heading("#0",text="Obj")
@@ -341,7 +343,7 @@ verblist.style.configure("Treeview.Heading",font=myfont)
 doBindList(verblist)
 
 propframe=Frame(nb)
-nb.add(propframe,text="Properties")
+nb.add(propframe,text="Properties",compound=TOP,image=tw.imgList["proplist"])
 
 proplist=ttk.Treeview(propframe,columns=("name","prop","detail"))
 proplist.heading("#0",text="Obj")
