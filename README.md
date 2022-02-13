@@ -93,6 +93,9 @@ Standard editing key functions should all work as expected.
 * Ctrl+/ can be used for select all.
 * Standard Tk key binds are here: https://www.tcl.tk/man/tcl8.4/TkCmd/text.html#M152
 
+## Icons ##
+Icons sourced from https://icons8.com/
+
 ## Release History ##
 0.5.7 - Improved handling of error lines to reduce chance of spoofing.
 
