@@ -94,6 +94,8 @@ Standard editing key functions should all work as expected.
 * Standard Tk key binds are here: https://www.tcl.tk/man/tcl8.4/TkCmd/text.html#M152
 
 ## Release History ##
+0.5.7 - Improved handling of error lines to reduce chance of spoofing.
+
 0.5.6 - Added type icons to tabs
 
 0.5.5 - Project Get Verbs and Properties in one command.

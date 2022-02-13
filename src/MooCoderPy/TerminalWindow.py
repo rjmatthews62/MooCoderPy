@@ -680,6 +680,8 @@ class TerminalWindow(ScrollText):
             (prog,line)=parsesep(line,',')
             line=parse(line)[1] # Skip "line"
             (lno,line)=parsesep(line,':')
+            if line=="" or not lno.isnumeric(): # Can be spoofed by @dump output.
+                return
             (obj,verb)=self.parseVerb(prog)    #Should strip out trailing defs.
             error=line
             self.getstack=True
