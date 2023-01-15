@@ -935,7 +935,7 @@ class TerminalWindow(ScrollText):
             self.lvProperties.delete(item)
         for k in sorted(self.proplist.keys()):
             v=self.proplist[k]
-            (obj,prop)=k.split(".")
+            (obj,prop)=k.split(".", 1)
             name=self.namelist[obj] if obj in self.namelist else obj
             self.lvProperties.insert("",END,text=obj, values=(name,prop,v))
         self.fitListContents(self.lvProperties)
