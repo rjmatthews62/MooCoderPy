@@ -1,6 +1,5 @@
 from tkinter import simpledialog
 from tkinter.ttk import Notebook
-from warnings import showwarning
 from ScrollText import *
 from tkinter import *
 from tkinter import messagebox,font

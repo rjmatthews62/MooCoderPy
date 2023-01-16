@@ -97,6 +97,8 @@ Standard editing key functions should all work as expected.
 Icons sourced from https://icons8.com/
 
 ## Release History ##
+0.5.8 - Included fix for properties with periods (contrib by Katelyn Gigante)
+
 0.5.7 - Improved handling of error lines to reduce chance of spoofing.
 
 0.5.6 - Added type icons to tabs

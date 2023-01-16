@@ -48,6 +48,8 @@ def getConfig():
         inifile.remove_section("DEFAULT")
     if not inifile.has_section("test"):
         inifile.add_section("test")
+    if not inifile.has_section("connections"):
+        inifile.add_section("connections")
     return inifile
 
 def saveConfig(inifile):
