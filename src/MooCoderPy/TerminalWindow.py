@@ -1,9 +1,11 @@
 from tkinter import simpledialog
+from tkinter import ttk
 from tkinter.ttk import Notebook
-from ScrollText import *
+from ScrollText import ScrollText
 from tkinter import *
 from tkinter import messagebox,font
 import socket, threading,select
+import mudtelnet
 import SettingsDialog
 from codetext import *
 from wgplib import *
@@ -392,7 +394,7 @@ class TerminalWindow(ScrollText):
             self.taglist.append(tagname)
             self.textbox.tag_raise(SEL) # Make sure selection overrides.
         self.currenttag = tagname
-    
+
     def doRefocus(self,event:Event):
         if len(event.char)>0 and event.char.isprintable():
             self.sendEntry.focus()
@@ -426,7 +428,7 @@ class TerminalWindow(ScrollText):
 
     def rgb(self, r, g, b):
         return "#%02x%02x%02x" % (r, g, b)
-    
+
     def flush(self):
         if self.output!="":
             self.textbox.insert("end",self.output,self.currenttag)
@@ -605,7 +607,7 @@ class TerminalWindow(ScrollText):
                     #pagesChange(self);
                     return True
         return False
-    
+
     def findVerbHelp(self,obj:str,verb:str)->str:
         """Extract help line from verb"""
         re=self.findVerbEditor(obj,verb)
@@ -636,7 +638,7 @@ class TerminalWindow(ScrollText):
                     if ansiSameText(aobj,obj) and ansiSameText(averb,searchverb):
                         return re
         return None
-    
+
     def findPage(self,title:str):
         """Return widget matching title, or None if not found."""
         for i in self.pages.tabs():
@@ -656,7 +658,7 @@ class TerminalWindow(ScrollText):
         if isinstance(w,ScrollText):
             return w
         return None
-    
+
     def currentTest(self)->Entry:
         w=self.currentPage()
         if isinstance(w,CodeText):
@@ -669,7 +671,7 @@ class TerminalWindow(ScrollText):
 
     def doCheckTest(self,line:str):
         """Check for stack trace messages"""
-        if self.getstack: 
+        if self.getstack:
             self.addtarget(self.stack,line)
         # #540:test (this == #540), line 5:  Type mismatch (expected integer; got float)
         # #151:+attacks, line 9:  Verb not found: #548:energy_cast()
@@ -699,7 +701,7 @@ class TerminalWindow(ScrollText):
             if self.errorverb!='':
                 self.findVerb(self.errorobj,self.errorverb,self.lastlno)
             self.errorverb=''
-    
+
     def doCheckCompile(self,line:str)->None:
         """Check that verb has compiled"""
 #        var lno,x,n:Integer; s1,s2:String;  e:TEdit;
@@ -722,7 +724,7 @@ class TerminalWindow(ScrollText):
             self.onExamineLine=self.doCheckTest
             if not self.checkSendTest():
                 self.showmessage(line)
-    
+
     def checkSendTest(self)->bool:
         e=self.currentTest()
         if e and (e.get()!=""):
@@ -760,7 +762,7 @@ class TerminalWindow(ScrollText):
         ifile=SettingsDialog.getConfig()
         t.testvar.set(ifile["test"].get(t.testName(),""))
         return t
-    
+
     def doRefresh(self,verbstr:str)->None:
         """Reload a verb"""
         try:
@@ -840,14 +842,14 @@ class TerminalWindow(ScrollText):
             self.arglist[tag]=args
             if not(tag in self.verblist):
                 self.verblist.append(tag)
-            try:                
+            try:
                 pg=self.currentPage().setLabel(progline)
             except:
                 pass
             self.updateVerbs()
         else:
             self.verbcollect+=line+"\n"
-    
+
     def findLocalEdit(self,name:str)->CodeText:
         """Find the local editor by name"""
         for tab in self.pages.tabs():
@@ -871,14 +873,14 @@ class TerminalWindow(ScrollText):
         re.highlight()
         self.pages.select(re)
         return re
-        
+
     def checkName(self,obj:str)->None:
         """Check that we know the name of an object."""
         if not(obj in self.namelist):
             self.sendCmd(';'+obj+'.name')
             self.onExamineLine=self.doCheckName
         self.lastobj=obj
-    
+
     def doCheckName(self,line:str):
         """Examine stream for name of object."""
         if line.lower().find('***finished***')>=0:
@@ -893,7 +895,7 @@ class TerminalWindow(ScrollText):
         self.namelist[self.lastobj]=aname
         self.updateVerbs()
         self.updateProperties(False)
-    
+
     def updateVerbs(self)->None:
         """Update Verb list window"""
 #        var nd:TListItem; s:String; obj,verb:String;
@@ -973,7 +975,7 @@ class TerminalWindow(ScrollText):
             return (tt[0].strip(),tt[1].strip())
         except:
             return("","")
-    
+
     def doupdate(self,caption:str, upload:str,text:str):
         if upload=="" or caption=="Local Edit":
             messagebox.showwarning("Send Update","Not in @edit mode")
@@ -994,7 +996,7 @@ class TerminalWindow(ScrollText):
             self.after(1000,self.sendCmd,test)
         self.pages.select(self)
         return True
-    
+
     def docompile(self,page:ScrollText):
         if not(isinstance(page, CodeText)):
             return
@@ -1037,7 +1039,7 @@ class TerminalWindow(ScrollText):
         if (self.connectString!=""):
             self.after(1000,self.sendCmd,self.connectString)
         print("Connected")
-    
+
     def showmessage(self,msg):
         messagebox.showinfo("MooCoderPy",msg)
 
@@ -1055,7 +1057,7 @@ class TerminalWindow(ScrollText):
             return # Not a real verb.
         #if not(self.selectError(obj,verb,lno)):
         self.fetchVerb(obj,verb)
-    
+
     def fetchVerb(self,obj,verb):
         self.sendCmd('@list '+obj+':'+verb+' without numbers')
         self.sendCmd(';player:tell("***finished***")')
@@ -1065,7 +1067,7 @@ class TerminalWindow(ScrollText):
     def sendCmd(self,cmd):
         buf=(cmd+"\n").encode("utf-8")
         self.socket.sendall(buf)
-        
+
 
     def doConnectStr(self):
         if (self.connectString!=""):
@@ -1082,10 +1084,11 @@ class TerminalWindow(ScrollText):
         except:
             pass
 
-    def doListen(self):
+    def doListen(self) -> None:
+        conn = mudtelnet.TelnetConnection()
         try:
             while True:
-                (readlist,writelist,exceptlist)=select.select([self.socket],[],[self.socket],1) 
+                (readlist,writelist,exceptlist)=select.select([self.socket],[],[self.socket],1)
                 if self.stopping:
                     print("Listen thread stopping.")
                     break
@@ -1097,7 +1100,20 @@ class TerminalWindow(ScrollText):
                     if len(b)==0: # Socket probably closed.
                         self.sendtext("\nDisconnected\n")
                         break
-                    self.sendtext(b.decode("utf-8"))
+                    while b:
+                        frame, size = mudtelnet.TelnetFrame.parse(b)
+                        out_buffer = bytearray()
+                        out_events = list()
+                        changed = conn.process_frame(frame, out_buffer, out_events)
+                        for e in out_events:
+                            if isinstance(e, mudtelnet.TelnetInMessage):
+                                self.sendtext(e.data.decode("utf-8") + '\n')
+                            else:
+                                print(f'unknown Message type: {e}')
+                        if changed:
+                            pass
+                        b = b[size:]
+
         except Exception as err:
             print("Connection error: {0}".format(err))
             try:
@@ -1122,7 +1138,7 @@ class TerminalWindow(ScrollText):
             self.dumpobject=s
             self.sendCmd('@dump '+self.dumpobject+" with noverbs")
             self.onExamineLine=self.doCheckProperties
-    
+
     def getBoth(self,event:Event=None):
         s=simpledialog.askstring('Verbs and Properties','Load Verb and Property list for object:', initialvalue=self.dumpobject)
         if (s):
@@ -1158,7 +1174,7 @@ class TerminalWindow(ScrollText):
         line=line.strip()
         if line.endswith('}'):
             line=line[0:len(line)-1]
-        self.verblist=[x for x in self.verblist if not(x.startswith(obj+":"))]    
+        self.verblist=[x for x in self.verblist if not(x.startswith(obj+":"))]
         t=line.split(",")
         for s1 in t:
             s=s1.strip()[1:]
@@ -1173,7 +1189,7 @@ class TerminalWindow(ScrollText):
             self.sendCmd('@dump '+self.dumpobject+" with noverbs")
             self.onExamineLine=self.doCheckProperties
 
-    
+
     def clearProject(self):
         """Close all open tabs and clear verb list"""
         if messagebox.askyesno("MooCoderPy","Clear this project?"):
@@ -1221,7 +1237,7 @@ class TerminalWindow(ScrollText):
                 (obj,verb)=v
                 if not self.selectError(obj,verb,lno):
                     self.fetchVerb(obj,verb)
-    
+
     def editProp(self,propname:str):
         """Edit a property"""
         try:
@@ -1250,7 +1266,7 @@ class TerminalWindow(ScrollText):
         self.sendCmd(";;"+propname+"="+newvalue)
         self.updateProperties()
         self.onExamineLine=self.doCheckUpdateProperty
-    
+
     def doCheckUpdateProperty(self,line:str):
         """Check on the results of an edit prop"""
         if not line.startswith('=> 0'):
