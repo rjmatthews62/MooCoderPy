@@ -96,7 +96,12 @@ Standard editing key functions should all work as expected.
 ## Icons ##
 Icons sourced from https://icons8.com/
 
+# External Dependencies
+mudtelnet  https://github.com/volundmush/mudtelnet-python
+
 ## Release History ##
+0.5.9 - Fix to unhandled IAC throwing an error. (contrib by Katelyn Gigante)
+
 0.5.8 - Included fix for properties with periods (contrib by Katelyn Gigante)
 
 0.5.7 - Improved handling of error lines to reduce chance of spoofing.
